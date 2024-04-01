@@ -7,10 +7,17 @@ use core_foundation::{
     // *,
 };
 
-use std::process::{Command, Stdio};
+use std::process::{
+    Command,
+    Stdio,
+};
 
-fn quick_look(path: &str)  {
-    let z = Command::new("/usr/bin/qlmanage").args(&["-p",  path]).spawn().unwrap();
+fn quick_look(path: &str) {
+    let z = Command::new("/usr/bin/qlmanage").args(&["-p", path]).spawn().unwrap();
+}
+
+fn open(path: &str) {
+    let z = Command::new("/usr/bin/open").args(&[path]).spawn().unwrap();
 }
 
 use core_graphics::event::{
@@ -19,28 +26,27 @@ use core_graphics::event::{
     CGEventTapLocation,
     CGEventTapOptions,
     CGEventTapPlacement,
-    EventField,
     CGEventType,
+    EventField,
 };
 
 use core_graphics::event::CGKeyCode;
 
-fn keycode(e: &CGEvent) -> i64  {
+fn keycode(e: &CGEvent) -> i64 {
     e.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE)
 }
 
-fn listen(f : impl Fn(CGEvent)-> () +'static) -> Result<CGEventTap<'static>, ()> {
-    let tap =
-        CGEventTap::new(
-            CGEventTapLocation::Session,
-            CGEventTapPlacement::HeadInsertEventTap,
-            CGEventTapOptions::Default,
-            vec![CGEventType::KeyDown],
-            move |_, _, ev| {
-                f(ev.to_owned());
-                Some(ev.to_owned())
-            },
-        )?;
+fn listen(f: impl Fn(CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
+    let tap = CGEventTap::new(
+        CGEventTapLocation::Session,
+        CGEventTapPlacement::HeadInsertEventTap,
+        CGEventTapOptions::Default,
+        vec![CGEventType::KeyDown],
+        move |_, _, ev| {
+            f(ev.to_owned());
+            Some(ev.to_owned())
+        },
+    )?;
     let source = tap.mach_port.create_runloop_source(0)?;
 
     let r = CFRunLoop::get_current();

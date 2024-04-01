@@ -1,4 +1,3 @@
-
 const kVK_ANSI_A: u16 = 0x00;
 const kVK_ANSI_S: u16 = 0x01;
 const kVK_ANSI_D: u16 = 0x02;
@@ -124,7 +123,7 @@ macro_rules! enum_with_constants {
         enum $name {
             $($constant),*
         }
-        
+
         impl $name {
             fn from_constant(value: usize) -> Option<Self> {
                 match value {
@@ -132,7 +131,7 @@ macro_rules! enum_with_constants {
                     _ => None
                 }
             }
-            
+
             fn to_constant(&self) -> usize {
                 match self {
                     $(Self::$constant => $value,)*
