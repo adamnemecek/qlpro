@@ -6,6 +6,13 @@ use core_foundation::{
     runloop::CFRunLoop,
     // *,
 };
+
+use std::process::{Command, Stdio};
+
+fn quick_look(path: &str)  {
+    let z = Command::new("/usr/bin/qlmanage").args(&["-p",  path]).spawn().unwrap();
+}
+
 use core_graphics::event::{
     CGEvent,
     CGEventTap,
@@ -31,11 +38,6 @@ fn listen(f : impl Fn(CGEvent)-> () +'static) -> Result<CGEventTap<'static>, ()>
             vec![CGEventType::KeyDown],
             move |_, _, ev| {
                 f(ev.to_owned());
-                // println!(
-                //     "event {:?}",
-                   
-                // );
-
                 Some(ev.to_owned())
             },
         )?;
@@ -43,14 +45,15 @@ fn listen(f : impl Fn(CGEvent)-> () +'static) -> Result<CGEventTap<'static>, ()>
 
     let r = CFRunLoop::get_current();
     r.add_source(&source, unsafe { core_foundation::runloop::kCFRunLoopCommonModes });
-
     tap.enable();
 
     Ok(tap)
 }
 
 fn main() {
-    let tap = listen(|e| println!("{}", keycode(&e))).unwrap();
+    // let tap = listen(|e| println!("{}", keycode(&e))).unwrap();
+
+    quick_look("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
     // MyEnum::A;
     CFRunLoop::run_current();
 }
