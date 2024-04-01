@@ -1,25 +1,17 @@
 use core_foundation::{
     runloop::CFRunLoop,
-    *,
+    // *,
 };
 use core_graphics::event::{
-    CGEventField,
     CGEventTap,
     CGEventTapLocation,
     CGEventTapOptions,
     CGEventTapPlacement,
     EventField,
+    CGEventType,
 };
 
-// pub fn new<F: Fn(CGEventTapProxy, CGEventType, &CGEvent) -> Option<CGEvent> + 'tap_life>(
-//     tap: CGEventTapLocation,
-//     place: CGEventTapPlacement,
-//     options: CGEventTapOptions,
-//     events_of_interest: std::vec::Vec<CGEventType>,
-//     callback: F,
-// ) -> Result<CGEventTap<'tap_life>, ()> {
-
-fn listen() -> Result<(), ()> {
+fn listen() -> Result<CGEventTap<'static>, ()> {
     // self.eventTap = CGEvent.tapCreate(
     //     tap: .cgSessionEventTap,
     //     place: .headInsertEventTap,
@@ -34,7 +26,7 @@ fn listen() -> Result<(), ()> {
             CGEventTapLocation::Session,
             CGEventTapPlacement::HeadInsertEventTap,
             CGEventTapOptions::Default,
-            vec![],
+            vec![CGEventType::KeyDown],
             |_, _, event| {
                 println!(
                     "event {:?}",
@@ -64,11 +56,11 @@ fn listen() -> Result<(), ()> {
 
     tap.enable();
 
-    Ok(())
+    Ok(tap)
 }
 
 fn main() {
-    listen().unwrap();
+    let tap = listen().unwrap();
 
     CFRunLoop::run_current();
 }
