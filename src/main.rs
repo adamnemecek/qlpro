@@ -1,4 +1,7 @@
-use core_foundation::*;
+use core_foundation::{
+    runloop::CFRunLoop,
+    *,
+};
 use core_graphics::event::{
     CGEventTap,
     CGEventTapLocation,
@@ -36,7 +39,6 @@ fn listen() -> Result<(), ()> {
     // let run_loop = core_foundation::run_loop::CFRunLoop::get_current();
     // run_loop.add_source(&run_loop_source, core_foundation::string::CFString::new("CGEventTap"));
     // run_loop.run();
-    tap.enable();
 
     // core_foundation::runloop::CFRunLoopAddSource(
     //     CFRunLoop::get_current(),
@@ -47,9 +49,16 @@ fn listen() -> Result<(), ()> {
     // let p = unsafe { cf::mach_port::CFMachPortCreateRunLoopSource(cf::base::kCFAllocatorDefault, &tap.mach_port, 0) };
     let a = tap.mach_port.create_runloop_source(0)?;
 
-    println!("Hello, world!");
+    use core_foundation as cf;
+    let r = CFRunLoop::get_current();
+    r.add_source(&a, unsafe { cf::runloop::kCFRunLoopCommonModes });
+    // println!("Hello, world!");
+
+    tap.enable();
 
     Ok(())
 }
 
-fn main() {}
+fn main() {
+    listen().unwrap();
+}
