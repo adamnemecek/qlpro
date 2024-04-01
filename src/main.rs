@@ -3,11 +3,12 @@ use core_foundation::{
     *,
 };
 use core_graphics::event::{
+    CGEventField,
     CGEventTap,
     CGEventTapLocation,
     CGEventTapOptions,
     CGEventTapPlacement,
-    CGEventType,
+    EventField,
 };
 
 // pub fn new<F: Fn(CGEventTapProxy, CGEventType, &CGEvent) -> Option<CGEvent> + 'tap_life>(
@@ -28,13 +29,21 @@ fn listen() -> Result<(), ()> {
     //     userInfo: userInfo
     // )
     // let z = CGEventTapLocation::Session;
-    let tap = CGEventTap::new(
-        CGEventTapLocation::Session,
-        CGEventTapPlacement::HeadInsertEventTap,
-        CGEventTapOptions::Default,
-        vec![],
-        |proxy, type_, event| Some(event.to_owned()),
-    )?;
+    let tap =
+        CGEventTap::new(
+            CGEventTapLocation::Session,
+            CGEventTapPlacement::HeadInsertEventTap,
+            CGEventTapOptions::Default,
+            vec![],
+            |_, _, event| {
+                println!(
+                    "event {:?}",
+                    event.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE)
+                );
+
+                Some(event.to_owned())
+            },
+        )?;
     // let run_loop_source = event_tap.get_run_loop_source();
     // let run_loop = core_foundation::run_loop::CFRunLoop::get_current();
     // run_loop.add_source(&run_loop_source, core_foundation::string::CFString::new("CGEventTap"));
@@ -52,7 +61,6 @@ fn listen() -> Result<(), ()> {
     use core_foundation as cf;
     let r = CFRunLoop::get_current();
     r.add_source(&a, unsafe { cf::runloop::kCFRunLoopCommonModes });
-    // println!("Hello, world!");
 
     tap.enable();
 
@@ -61,4 +69,6 @@ fn listen() -> Result<(), ()> {
 
 fn main() {
     listen().unwrap();
+
+    CFRunLoop::run_current();
 }
