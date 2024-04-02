@@ -156,20 +156,27 @@ enum Action {
     Exit,
 }
 
-fn paths() -> impl Iterator<Item = &'static str> {
-    let mut paths: Vec<_> = std::env::args().skip(1).collect();
+fn paths() -> Option<Vec<std::path::PathBuf>> {
+    let paths: Vec<_> = std::env::args().collect();
+    if paths.len() <= 1 {
+        return None;
+    }
 
-    println!("{:?}", std::env::current_dir());
-    std::iter::from_fn(|| None)
-    // todo!();
+    let cur_dir = std::env::current_dir().unwrap();
 
-    // unimplemented!()
+    Some(paths.iter().map(|x| {
+        let mut p = cur_dir.clone();
+        p.push(x);
+        p
+    }).collect())
 }
 
 fn main() {
     // for e in  {
     //     println!("{}", e);
     // }
+    println!("{:?}", paths());
+    todo!();
 
     let tap = listen(|e| {
         // if front_most_application() == "com.apple.quicklook.qlmanage" {
