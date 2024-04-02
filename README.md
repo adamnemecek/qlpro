@@ -7,8 +7,11 @@ Usage: quicklookpro <files>
 The user can control the previews using keyboard
 
 N: next
+
 P: previous
+
 O: open 
+
 W: exit
 
 
