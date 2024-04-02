@@ -37,7 +37,11 @@ use {
 };
 
 fn quick_look(path: &str) -> Child {
-    Command::new("/usr/bin/qlmanage").args(&["-p", path]).spawn().unwrap()
+    Command::new("/usr/bin/qlmanage")
+        .args(&["-p", path])
+        .stdin(std::process::Stdio::null())
+        .spawn()
+        .unwrap()
 }
 
 fn open(path: &str) -> Child {
@@ -188,7 +192,6 @@ impl Action {
     }
 }
 
-
 #[repr(isize)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum Dir {
@@ -254,7 +257,7 @@ fn main() {
 
     // let mut app = App::new(paths);
     let app = std::rc::Rc::new(RefCell::new(App::new(paths)));
-    let tap = listen(move |e| {
+    let _tap = listen(move |e| {
         let mut a = app.as_ref().borrow_mut();
         a.handle(e);
     })
