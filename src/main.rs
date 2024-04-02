@@ -6,7 +6,6 @@ use {
         runloop::CFRunLoop,
         string::{
             kCFStringEncodingUTF8,
-            CFString,
             CFStringGetCStringPtr,
             CFStringRef,
         },
@@ -144,8 +143,7 @@ impl Action {
             KeyCode1::P => Self::Prev.into(),
             KeyCode1::N => Self::Next.into(),
             KeyCode1::O | KeyCode1::Return => Self::Open.into(),
-            KeyCode1::Q => Self::Exit.into(),
-            KeyCode1::W => Self::Exit.into(),
+            KeyCode1::Q | KeyCode1::W => Self::Exit.into(),
             _ => None,
         }
     }
@@ -228,53 +226,3 @@ fn main() {
 
     CFRunLoop::run_current();
 }
-
-// pub trait NSWorkspace {
-
-// fn to_string(string_ref: CFStringRef) -> String {
-//     // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
-//     unsafe {
-//         let char_ptr = CFStringGetCStringPtr(string_ref, kCFStringEncodingUTF8);
-//         if !char_ptr.is_null() {
-//             let c_str = std::ffi::CStr::from_ptr(char_ptr);
-//             return String::from(c_str.to_str().unwrap());
-//         }
-
-//         let char_len = CFStringGetLength(string_ref);
-
-//         let mut bytes_required: CFcursor = 0;
-//         CFStringGetBytes(
-//             string_ref,
-//             CFRange {
-//                 location: 0,
-//                 length: char_len,
-//             },
-//             kCFStringEncodingUTF8,
-//             0,
-//             false as Boolean,
-//             std::ptr::null_mut(),
-//             0,
-//             &mut bytes_required,
-//         );
-
-//         // Then, allocate the buffer and actually copy.
-//         let mut buffer = vec![b'\x00'; bytes_required as usize];
-
-//         let mut bytes_used: CFcursor = 0;
-//         CFStringGetBytes(
-//             string_ref,
-//             CFRange {
-//                 location: 0,
-//                 length: char_len,
-//             },
-//             kCFStringEncodingUTF8,
-//             0,
-//             false as Boolean,
-//             buffer.as_mut_ptr(),
-//             buffer.len() as CFcursor,
-//             &mut bytes_used,
-//         );
-
-//         return String::from_utf8_unchecked(buffer);
-//     }
-// }
