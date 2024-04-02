@@ -2,15 +2,15 @@
 
 `quicklookpro` is a CLI application for macOS to enable running previews from command line on multiple.
 
-Usage: quicklookpro <files>
+Usage: `quicklookpro <files>`
 
-The user can control the previews using keyboard
+The user can control the previews using keyboard:
 
-N: next
+N: next file
 
-P: previous
+P: previous file
 
-O: open 
+O: open file
 
 W: exit
 
