@@ -47,8 +47,8 @@ fn listen(f: impl Fn(CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()
             Some(ev.to_owned())
         },
     )?;
-    let source = tap.mach_port.create_runloop_source(0)?;
 
+    let source = tap.mach_port.create_runloop_source(0)?;
     let r = CFRunLoop::get_current();
     r.add_source(&source, unsafe { core_foundation::runloop::kCFRunLoopCommonModes });
     tap.enable();
@@ -56,10 +56,28 @@ fn listen(f: impl Fn(CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()
     Ok(tap)
 }
 
+// pub trait NSWorkspace {
+
+// }
+#[macro_use]
+extern crate objc;
+
+unsafe fn front_most_application() {
+    use cocoa::base::{id};
+    // use objc::class;
+    let workspace: id =  msg_send![class!(NSWorkspace), sharedWorkspace];
+    let frontApp: id =  msg_send![workspace, frontmostApplication] ;
+    println!("{:?}", frontApp);
+}
+
 fn main() {
     // let tap = listen(|e| println!("{}", keycode(&e))).unwrap();
 
-    quick_look("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
+    // quick_look("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
+    // use core_foundation::base::msg_sen
+    // macro
+    unsafe { front_most_application() };
+    
     // MyEnum::A;
     CFRunLoop::run_current();
 }
