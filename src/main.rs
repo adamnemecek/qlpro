@@ -5,12 +5,7 @@ use {
     core_foundation::{
         runloop::CFRunLoop,
         string::{
-            kCFStringEncodingUTF8,
-            // CFString,
-            // CFStringGetBytes,
-            CFStringGetCStringPtr,
-            // CFStringGetLength,
-            CFStringRef,
+            kCFStringEncodingUTF8, CFString, CFStringGetCStringPtr, CFStringRef
         },
     },
 
@@ -98,7 +93,6 @@ fn front_most_application() -> &'static str {
         let workspace: id = msg_send![class!(NSWorkspace), sharedWorkspace];
         let front_app: id = msg_send![workspace, frontmostApplication];
         let bundle_id: CFStringRef = msg_send![front_app, bundleIdentifier];
-        // bundleID
         to_string(bundle_id)
     }
 }
