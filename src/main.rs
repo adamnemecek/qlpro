@@ -219,7 +219,6 @@ fn main() {
         return;
     };
 
-    // let mut app = App::new(paths);
     let app = std::rc::Rc::new(RefCell::new(App::new(paths)));
     let _tap = listen(move |e| {
         let mut a = app.as_ref().borrow_mut();
