@@ -1,23 +1,6 @@
-macro_rules! gen_keycode {
-    ($name:ident { $($constant:ident = $value:expr),* }) => {
-        #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-        #[repr(u16)]
-        pub enum $name {
-            $($constant),*
-        }
-
-        impl From<u16> for $name {
-            fn from(value: u16) -> Self {
-                match value {
-                    $($value => (Self::$constant),)*
-                    _=> todo!()
-                }
-            }
-        }
-    };
-}
-
-gen_keycode!(KeyCode {
+#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[repr(u16)]
+pub enum KeyCode {
     A = 0x00,
     S = 0x01,
     D = 0x02,
@@ -131,4 +114,11 @@ gen_keycode!(KeyCode {
     RightArrow = 0x7C,
     DownArrow = 0x7D,
     UpArrow = 0x7E
-});
+}
+
+
+impl From<u16> for KeyCode{
+    fn from(value: u16) -> Self {
+        Self::try_from(value).unwrap()
+    }
+}
