@@ -50,7 +50,7 @@ fn keycode(e: &CGEvent) -> KeyCode1 {
     z
 }
 
-fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
+fn listen(f: impl FnMut(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
     let tap = CGEventTap::new(
         CGEventTapLocation::Session,
         CGEventTapPlacement::HeadInsertEventTap,
@@ -184,30 +184,47 @@ fn action(e: &CGEvent) -> Action {
     }
 }
 
+#[repr(isize)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum Dir {
+    Prev = -1,
+    Next = 1,
+}
+
 struct App {
     p: Child,
+    paths: Vec<std::path::PathBuf>,
+    index: usize,
 }
 
 impl App {
-    pub fn new(paht: Vec<std::path::PathBuf>) -> Self {
-        
-        // Self {
-        //     p: 
-        // }
-        todo!()
+    pub fn new(paths: Vec<std::path::PathBuf>) -> Self {
+        assert!(!paths.is_empty());
+        let z = &paths[0];
+        let p = open(&z.to_string_lossy());
+        Self { p, paths, index: 0 }
     }
 
-    pub fn handle(&self,e: &CGEvent) {
-        //
+    fn move_by(&mut self, delta: Dir) {
+        let x = delta as isize;
+    }
+
+    pub fn handle(&mut self, e: &CGEvent) {
+        let is_preview = front_most_application() == "com.apple.quicklook.qlmanage";
+        if !is_preview {
+            return;
+        }
+
         let a = action(e);
         match a {
-            Action::Next=> todo!(),
-            Action::Prev=> todo!(),
-            Action::Open=> todo!(),
-            Action::Exit=> todo!(),
+            Action::Next => self.move_by(Dir::Next),
+            Action::Prev => self.move_by(Dir::Prev),
+            Action::Open => {
+                // open(path)
+            }
+            Action::Exit => std::process::exit(0),
         }
         println!("{:?}", a);
-
     }
 }
 
@@ -217,20 +234,19 @@ fn main() {
     // }
     let paths = paths().unwrap();
 
-    let app = App::new(paths);
+    let mut app = App::new(paths);
 
-    let tap =
-        listen(move |e| {
-            app.handle(e);
-            // if front_most_application() == "com.apple.quicklook.qlmanage" {
-            // }
-        })
-        .unwrap();
+    let tap = listen(move |e| {
+        app.handle(e);
+        // if front_most_application() == "com.apple.quicklook.qlmanage" {
+        // }
+    })
+    .unwrap();
 
     // quick_look("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
     // use core_foundation::base::msg_sen
     // macro
-    let q = front_most_application();
+
     println!("{}", q);
 
     // MyEnum::A;
