@@ -39,7 +39,7 @@ use {
 fn quick_look(path: &str) -> Child {
     Command::new("/usr/bin/qlmanage")
         .args(&["-p", path])
-        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
         .spawn()
         .unwrap()
 }
@@ -183,8 +183,8 @@ impl Action {
         let kc = KeyCode1::from(e);
         match kc {
             KeyCode1::P => Self::Prev.into(),
-            KeyCode1::O | KeyCode1::Return => Self::Open.into(),
             KeyCode1::N => Self::Next.into(),
+            KeyCode1::O | KeyCode1::Return => Self::Open.into(),
             KeyCode1::Q => Self::Exit.into(),
             KeyCode1::W => Self::Exit.into(),
             _ => None,
@@ -208,7 +208,9 @@ struct App {
 impl App {
     pub fn new(paths: Vec<std::path::PathBuf>) -> Self {
         assert!(!paths.is_empty());
-        let ql = quick_look(&paths[0].to_string_lossy());
+        let path = &paths[0].to_string_lossy();
+        println!("{:?}", path);
+        let ql = quick_look(path);
         Self { ql, paths, index: 0 }
     }
 
