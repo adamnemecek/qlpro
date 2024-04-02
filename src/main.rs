@@ -205,6 +205,10 @@ impl App {
         Self { p, paths, index: 0 }
     }
 
+    fn current_path<'a>(&'a self) -> std::borrow::Cow<'a, str> {
+        self.paths[self.index].to_string_lossy()
+    }
+
     fn move_by(&mut self, delta: Dir) {
         let new_index = self.index as isize + delta as isize;
         let indices = 0..self.paths.len() as isize;
@@ -214,7 +218,7 @@ impl App {
         let _ = self.p.kill();
 
         self.index = new_index as _;
-        let path = &self.paths[self.index].to_string_lossy();
+        let path = &self.current_path();
         println!("{:?}", path);
         self.p = quick_look(path);
     }
@@ -230,7 +234,7 @@ impl App {
                 Action::Next => self.move_by(Dir::Next),
                 Action::Prev => self.move_by(Dir::Prev),
                 Action::Open => {
-                    open(&self.paths[self.index].to_string_lossy());
+                    open(&self.current_path());
                 }
                 Action::Exit => std::process::exit(0),
             }
