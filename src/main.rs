@@ -1,9 +1,6 @@
 #[macro_use]
 extern crate objc;
 
-mod keycodes;
-pub use keycodes::*;
-
 use {
     core_foundation::{
         runloop::CFRunLoop,
@@ -35,6 +32,9 @@ use {
         },
     },
 };
+
+mod keycodes;
+pub use keycodes::*;
 
 fn quick_look(path: &str) -> Child {
     Command::new("/usr/bin/qlmanage")
@@ -212,7 +212,7 @@ impl App {
 
 fn main() {
     let Some(paths) = paths() else {
-        println!("Usage: Pass in the list of pdfs");
+        println!("Usage: Pass in the list of files");
         return;
     };
 
