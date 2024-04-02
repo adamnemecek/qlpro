@@ -170,18 +170,18 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
     )
 }
 
-fn action(e: &CGEvent) -> Action {
+fn action(e: &CGEvent) -> Option<Action> {
     let flags = e.get_flags();
 
     let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
     let kc = keycode(e);
     match kc {
-        KeyCode1::P => Action::Prev,
-        KeyCode1::O | KeyCode1::Return => Action::Open,
-        KeyCode1::N => Action::Next,
-        KeyCode1::Q => Action::Exit,
-        KeyCode1::W => Action::Exit,
-        _ => unimplemented!(),
+        KeyCode1::P => Action::Prev.into(),
+        KeyCode1::O | KeyCode1::Return => Action::Open.into(),
+        KeyCode1::N => Action::Next.into(),
+        KeyCode1::Q => Action::Exit.into(),
+        KeyCode1::W => Action::Exit.into(),
+        _ => None,
     }
 }
 
@@ -198,10 +198,6 @@ struct App {
     index: usize,
 }
 
-// fn indices<T>(a:&[T])->std::ops::Range<usize> {
-
-// }
-
 impl App {
     pub fn new(paths: Vec<std::path::PathBuf>) -> Self {
         assert!(!paths.is_empty());
@@ -215,6 +211,7 @@ impl App {
         if !indices.contains(&new_index) {
             return;
         }
+        let _ = self.p.kill();
 
         self.index = new_index as _;
         let path = &self.paths[self.index].to_string_lossy();
@@ -228,16 +225,18 @@ impl App {
             return;
         }
 
-        let a = action(e);
-        match a {
-            Action::Next => self.move_by(Dir::Next),
-            Action::Prev => self.move_by(Dir::Prev),
-            Action::Open => {
-                open(&self.paths[self.index].to_string_lossy());
+        if let Some(a) = action(e) {
+            match a {
+                Action::Next => self.move_by(Dir::Next),
+                Action::Prev => self.move_by(Dir::Prev),
+                Action::Open => {
+                    open(&self.paths[self.index].to_string_lossy());
+                }
+                Action::Exit => std::process::exit(0),
             }
-            Action::Exit => std::process::exit(0),
+        } else {
         }
-        println!("{:?}", a);
+        // println!("{:?}", a);
     }
 }
 
