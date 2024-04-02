@@ -65,7 +65,8 @@ fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, (
         vec![CGEventType::KeyDown],
         move |_, _, ev| {
             f(ev);
-            Some(ev.to_owned())
+            // Some(ev.to_owned())
+            None
         },
     )?;
 
@@ -77,55 +78,6 @@ fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, (
     Ok(tap)
 }
 
-// pub trait NSWorkspace {
-
-// fn to_string(string_ref: CFStringRef) -> String {
-//     // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
-//     unsafe {
-//         let char_ptr = CFStringGetCStringPtr(string_ref, kCFStringEncodingUTF8);
-//         if !char_ptr.is_null() {
-//             let c_str = std::ffi::CStr::from_ptr(char_ptr);
-//             return String::from(c_str.to_str().unwrap());
-//         }
-
-//         let char_len = CFStringGetLength(string_ref);
-
-//         let mut bytes_required: CFIndex = 0;
-//         CFStringGetBytes(
-//             string_ref,
-//             CFRange {
-//                 location: 0,
-//                 length: char_len,
-//             },
-//             kCFStringEncodingUTF8,
-//             0,
-//             false as Boolean,
-//             std::ptr::null_mut(),
-//             0,
-//             &mut bytes_required,
-//         );
-
-//         // Then, allocate the buffer and actually copy.
-//         let mut buffer = vec![b'\x00'; bytes_required as usize];
-
-//         let mut bytes_used: CFIndex = 0;
-//         CFStringGetBytes(
-//             string_ref,
-//             CFRange {
-//                 location: 0,
-//                 length: char_len,
-//             },
-//             kCFStringEncodingUTF8,
-//             0,
-//             false as Boolean,
-//             buffer.as_mut_ptr(),
-//             buffer.len() as CFIndex,
-//             &mut bytes_used,
-//         );
-
-//         return String::from_utf8_unchecked(buffer);
-//     }
-// }
 
 fn to_string(string_ref: CFStringRef) -> &'static str {
     // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
@@ -274,3 +226,54 @@ fn main() {
 
     CFRunLoop::run_current();
 }
+
+
+// pub trait NSWorkspace {
+
+// fn to_string(string_ref: CFStringRef) -> String {
+//     // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
+//     unsafe {
+//         let char_ptr = CFStringGetCStringPtr(string_ref, kCFStringEncodingUTF8);
+//         if !char_ptr.is_null() {
+//             let c_str = std::ffi::CStr::from_ptr(char_ptr);
+//             return String::from(c_str.to_str().unwrap());
+//         }
+
+//         let char_len = CFStringGetLength(string_ref);
+
+//         let mut bytes_required: CFIndex = 0;
+//         CFStringGetBytes(
+//             string_ref,
+//             CFRange {
+//                 location: 0,
+//                 length: char_len,
+//             },
+//             kCFStringEncodingUTF8,
+//             0,
+//             false as Boolean,
+//             std::ptr::null_mut(),
+//             0,
+//             &mut bytes_required,
+//         );
+
+//         // Then, allocate the buffer and actually copy.
+//         let mut buffer = vec![b'\x00'; bytes_required as usize];
+
+//         let mut bytes_used: CFIndex = 0;
+//         CFStringGetBytes(
+//             string_ref,
+//             CFRange {
+//                 location: 0,
+//                 length: char_len,
+//             },
+//             kCFStringEncodingUTF8,
+//             0,
+//             false as Boolean,
+//             buffer.as_mut_ptr(),
+//             buffer.len() as CFIndex,
+//             &mut bytes_used,
+//         );
+
+//         return String::from_utf8_unchecked(buffer);
+//     }
+// }
