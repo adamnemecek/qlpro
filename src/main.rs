@@ -140,7 +140,7 @@ fn front_most_application() -> &'static str {
         to_string(bundle_id)
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 
 enum Action {
     Next,
@@ -174,16 +174,41 @@ fn action(e: &CGEvent) -> Action {
 
     let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
     let kc = keycode(e);
-    let c = match kc {
+    match kc {
         KeyCode1::P => Action::Prev,
         KeyCode1::O | KeyCode1::Return => Action::Open,
         KeyCode1::N => Action::Next,
         KeyCode1::Q => Action::Exit,
         KeyCode1::W => Action::Exit,
         _ => unimplemented!(),
-    };
+    }
+}
 
-    Action::Next
+struct App {
+    p: Child,
+}
+
+impl App {
+    pub fn new(paht: Vec<std::path::PathBuf>) -> Self {
+        
+        // Self {
+        //     p: 
+        // }
+        todo!()
+    }
+
+    pub fn handle(&self,e: &CGEvent) {
+        //
+        let a = action(e);
+        match a {
+            Action::Next=> todo!(),
+            Action::Prev=> todo!(),
+            Action::Open=> todo!(),
+            Action::Exit=> todo!(),
+        }
+        println!("{:?}", a);
+
+    }
 }
 
 fn main() {
@@ -192,8 +217,11 @@ fn main() {
     // }
     let paths = paths().unwrap();
 
+    let app = App::new(paths);
+
     let tap =
-        listen(|e| {
+        listen(move |e| {
+            app.handle(e);
             // if front_most_application() == "com.apple.quicklook.qlmanage" {
             // }
         })
