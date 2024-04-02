@@ -4,24 +4,36 @@ extern crate objc;
 mod keycodes;
 pub use keycodes::*;
 
-use core_foundation::{
-    runloop::CFRunLoop,
-    // *,
-};
+use {
+    core_foundation::{
+        runloop::CFRunLoop,
+        string::{
+            kCFStringEncodingUTF8,
+            // CFString,
+            // CFStringGetBytes,
+            CFStringGetCStringPtr,
+            // CFStringGetLength,
+            CFStringRef,
+        },
+    },
 
-use core_foundation::string::{
-    kCFStringEncodingUTF8,
-    // CFString,
-    // CFStringGetBytes,
-    CFStringGetCStringPtr,
-    // CFStringGetLength,
-    CFStringRef,
-};
-
-use std::cell::RefCell;
-use std::process::{
-    Child,
-    Command,
+    core_graphics::event::{
+        CGEvent,
+        // CGEventFlags,
+        CGEventTap,
+        CGEventTapLocation,
+        CGEventTapOptions,
+        CGEventTapPlacement,
+        CGEventType,
+        EventField,
+    },
+    std::{
+        cell::RefCell,
+        process::{
+            Child,
+            Command,
+        },
+    },
 };
 
 fn quick_look(path: &str) -> Child {
@@ -31,17 +43,6 @@ fn quick_look(path: &str) -> Child {
 fn open(path: &str) -> Child {
     Command::new("/usr/bin/open").args(&[path]).spawn().unwrap()
 }
-
-use core_graphics::event::{
-    CGEvent,
-    CGEventFlags,
-    CGEventTap,
-    CGEventTapLocation,
-    CGEventTapOptions,
-    CGEventTapPlacement,
-    CGEventType,
-    EventField,
-};
 
 // use core_graphics::event::CGKeyCode;
 
@@ -171,8 +172,7 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
 }
 
 fn action(e: &CGEvent) -> Option<Action> {
-    let flags = e.get_flags();
-
+    // let flags = e.get_flags();
     // let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
     let kc = keycode(e);
     match kc {
