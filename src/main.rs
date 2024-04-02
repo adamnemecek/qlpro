@@ -145,8 +145,30 @@ fn front_most_application() -> &'static str {
         to_string(bundle_id)
     }
 }
+#[derive(Clone, Copy, PartialEq, Eq)]
+
+enum Action {
+    Next,
+    Prev,
+    Open,
+    Exit,
+}
+
+fn paths() -> impl Iterator<Item = &'static str> {
+    let mut paths: Vec<_> = std::env::args().skip(1).collect();
+
+    println!("{:?}", std::env::current_dir());
+    std::iter::from_fn(|| None)
+    // todo!();
+
+    // unimplemented!()
+}
 
 fn main() {
+    // for e in  {
+    //     println!("{}", e);
+    // }
+
     let tap = listen(|e| println!("{}", keycode(e))).unwrap();
 
     // quick_look("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
