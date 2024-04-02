@@ -1,10 +1,7 @@
+#[macro_use]
+extern crate objc;
+
 mod keycodes;
-use core_foundation::base::{
-    Boolean,
-    CFIndex,
-    CFRange,
-};
-// use core_graphics::sys::CGEvent;
 pub use keycodes::*;
 
 use core_foundation::{
@@ -14,29 +11,37 @@ use core_foundation::{
 
 use core_foundation::string::{
     kCFStringEncodingUTF8,
-    CFString,
-    CFStringGetBytes,
+    // CFString,
+    // CFStringGetBytes,
     CFStringGetCStringPtr,
-    CFStringGetLength,
+    // CFStringGetLength,
     CFStringRef,
 };
 
-use std::borrow::Borrow;
+// use std::borrow::Borrow;
 use std::process::{
-    Command,
-    Stdio,
+    Child,
+    Command, // Stdio,
 };
 
-fn quick_look(path: &str) {
-    let z = Command::new("/usr/bin/qlmanage").args(&["-p", path]).spawn().unwrap();
+fn quick_look(path: &str) -> Child {
+    Command::new("/usr/bin/qlmanage").args(&["-p", path]).spawn().unwrap()
 }
 
-fn open(path: &str) {
-    let z = Command::new("/usr/bin/open").args(&[path]).spawn().unwrap();
+fn open(path: &str) -> Child {
+    Command::new("/usr/bin/open").args(&[path]).spawn().unwrap()
 }
 
 use core_graphics::event::{
-    CGEvent, CGEventFlags, CGEventMask, CGEventTap, CGEventTapLocation, CGEventTapOptions, CGEventTapPlacement, CGEventType, EventField
+    CGEvent,
+    CGEventFlags,
+    // CGEventMask,
+    CGEventTap,
+    CGEventTapLocation,
+    CGEventTapOptions,
+    CGEventTapPlacement,
+    CGEventType,
+    EventField,
 };
 
 // use core_graphics::event::CGKeyCode;
@@ -68,10 +73,6 @@ fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, (
 }
 
 // pub trait NSWorkspace {
-
-// }
-#[macro_use]
-extern crate objc;
 
 // fn to_string(string_ref: CFStringRef) -> String {
 //     // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
@@ -158,14 +159,26 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
 
     let cur_dir = std::env::current_dir().unwrap();
 
-    Some(paths.iter().map(|x| {
-        let mut p = cur_dir.clone();
-        p.push(x);
-        p
-    }).collect())
+    Some(
+        paths
+            .iter()
+            .map(|x| {
+                let mut p = cur_dir.clone();
+                p.push(x);
+                p
+            })
+            .collect(),
+    )
 }
 
+fn action(e: &CGEvent) -> Action {
+    let flags = e.get_flags();
 
+    let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
+    keycode(e);
+
+    Action::Next
+}
 
 fn main() {
     // for e in  {
@@ -173,16 +186,12 @@ fn main() {
     // }
     let paths = paths().unwrap();
 
-    let tap = listen(|e| {
-        // if front_most_application() == "com.apple.quicklook.qlmanage" {
-            let flags = e.get_flags();
-            
-            flags.contains(CGEventFlags::CGEventFlagCommand);
-            println!("{}", front_most_application());
-            println!("{:?}", keycode(e));
-        // }
-    })
-    .unwrap();
+    let tap =
+        listen(|e| {
+            // if front_most_application() == "com.apple.quicklook.qlmanage" {
+            // }
+        })
+        .unwrap();
 
     // quick_look("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
     // use core_foundation::base::msg_sen
