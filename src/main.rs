@@ -18,6 +18,7 @@ use core_foundation::string::{
     CFStringRef,
 };
 
+use std::cell::RefCell;
 use std::process::{
     Child,
     Command,
@@ -50,7 +51,7 @@ fn keycode(e: &CGEvent) -> KeyCode1 {
     z
 }
 
-fn listen(f: impl FnMut(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
+fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
     let tap = CGEventTap::new(
         CGEventTapLocation::Session,
         CGEventTapPlacement::HeadInsertEventTap,
@@ -214,8 +215,11 @@ impl App {
         if !indices.contains(&new_index) {
             return;
         }
+
         self.index = new_index as _;
-        self.p = quick_look(&self.paths[self.index].to_string_lossy());
+        let path = &self.paths[self.index].to_string_lossy();
+        println!("{:?}", path);
+        self.p = quick_look(path);
     }
 
     pub fn handle(&mut self, e: &CGEvent) {
@@ -238,26 +242,15 @@ impl App {
 }
 
 fn main() {
-    // for e in  {
-    //     println!("{}", e);
-    // }
     let paths = paths().unwrap();
 
-    let mut app = App::new(paths);
-
+    // let mut app = App::new(paths);
+    let app = std::rc::Rc::new(RefCell::new(App::new(paths)));
     let tap = listen(move |e| {
-        app.handle(e);
-        // if front_most_application() == "com.apple.quicklook.qlmanage" {
-        // }
+        let mut a = app.as_ref().borrow_mut();
+        a.handle(e);
     })
     .unwrap();
 
-    // quick_look("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
-    // use core_foundation::base::msg_sen
-    // macro
-
-    // println!("{}", q);
-
-    // MyEnum::A;
     CFRunLoop::run_current();
 }
