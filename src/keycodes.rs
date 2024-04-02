@@ -1,7 +1,3 @@
-// pub enum KeyCode {
-
-// }
-
 macro_rules! enum_with_constants {
     ($name:ident { $($constant:ident = $value:expr),* }) => {
         #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]

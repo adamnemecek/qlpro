@@ -46,10 +46,11 @@ fn open(path: &str) -> Child {
 
 // use core_graphics::event::CGKeyCode;
 
-fn keycode(e: &CGEvent) -> KeyCode1 {
-    let c = e.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
-    let z = crate::KeyCode1::from_constant(c as i16);
-    z
+impl KeyCode1 {
+    fn from(e: &CGEvent) -> Self {
+        let c = e.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
+        Self::from_constant(c as i16)
+    }
 }
 
 fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
@@ -174,7 +175,7 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
 fn action(e: &CGEvent) -> Option<Action> {
     // let flags = e.get_flags();
     // let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
-    let kc = keycode(e);
+    let kc = KeyCode1::from(e);
     match kc {
         KeyCode1::P => Action::Prev.into(),
         KeyCode1::O | KeyCode1::Return => Action::Open.into(),
