@@ -18,10 +18,9 @@ use core_foundation::string::{
     CFStringRef,
 };
 
-// use std::borrow::Borrow;
 use std::process::{
     Child,
-    Command, // Stdio,
+    Command,
 };
 
 fn quick_look(path: &str) -> Child {
@@ -35,7 +34,6 @@ fn open(path: &str) -> Child {
 use core_graphics::event::{
     CGEvent,
     CGEventFlags,
-    // CGEventMask,
     CGEventTap,
     CGEventTapLocation,
     CGEventTapOptions,
@@ -175,7 +173,15 @@ fn action(e: &CGEvent) -> Action {
     let flags = e.get_flags();
 
     let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
-    keycode(e);
+    let kc = keycode(e);
+    let c = match kc {
+        KeyCode1::P => Action::Prev,
+        KeyCode1::O | KeyCode1::Return => Action::Open,
+        KeyCode1::N => Action::Next,
+        KeyCode1::Q => Action::Exit,
+        KeyCode1::W => Action::Exit,
+        _ => unimplemented!(),
+    };
 
     Action::Next
 }
