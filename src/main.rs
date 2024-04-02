@@ -164,7 +164,7 @@ enum Dir {
 struct App {
     ql: Child,
     paths: Vec<(String, std::path::PathBuf)>,
-    index: usize,
+    cursor: usize,
 }
 
 impl App {
@@ -173,23 +173,23 @@ impl App {
         let path = &paths[0].0;
         println!("{}", &paths[0].0);
         let ql = quick_look(path);
-        Self { ql, paths, index: 0 }
+        Self { ql, paths, cursor: 0 }
     }
 
     fn current_path<'a>(&'a self) -> (&str, std::borrow::Cow<'a, str>) {
-        // let p =self.paths[self.index];
-        (&self.paths[self.index].0, self.paths[self.index].1.to_string_lossy())
+        // let p =self.paths[self.cursor];
+        (&self.paths[self.cursor].0, self.paths[self.cursor].1.to_string_lossy())
     }
 
     fn move_by(&mut self, delta: Dir) {
-        let new_index = self.index as isize + delta as isize;
+        let new_cursor = self.cursor as isize + delta as isize;
         let indices = 0..self.paths.len() as isize;
-        if !indices.contains(&new_index) {
+        if !indices.contains(&new_cursor) {
             return;
         }
         let _ = self.ql.kill();
 
-        self.index = new_index as _;
+        self.cursor = new_cursor as _;
         let path = &self.current_path();
         println!("{}", path.0);
         self.ql = quick_look(&path.1);
@@ -246,7 +246,7 @@ fn main() {
 
 //         let char_len = CFStringGetLength(string_ref);
 
-//         let mut bytes_required: CFIndex = 0;
+//         let mut bytes_required: CFcursor = 0;
 //         CFStringGetBytes(
 //             string_ref,
 //             CFRange {
@@ -264,7 +264,7 @@ fn main() {
 //         // Then, allocate the buffer and actually copy.
 //         let mut buffer = vec![b'\x00'; bytes_required as usize];
 
-//         let mut bytes_used: CFIndex = 0;
+//         let mut bytes_used: CFcursor = 0;
 //         CFStringGetBytes(
 //             string_ref,
 //             CFRange {
@@ -275,7 +275,7 @@ fn main() {
 //             0,
 //             false as Boolean,
 //             buffer.as_mut_ptr(),
-//             buffer.len() as CFIndex,
+//             buffer.len() as CFcursor,
 //             &mut bytes_used,
 //         );
 
