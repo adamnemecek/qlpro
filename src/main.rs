@@ -172,19 +172,22 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
     )
 }
 
-fn action(e: &CGEvent) -> Option<Action> {
-    // let flags = e.get_flags();
-    // let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
-    let kc = KeyCode1::from(e);
-    match kc {
-        KeyCode1::P => Action::Prev.into(),
-        KeyCode1::O | KeyCode1::Return => Action::Open.into(),
-        KeyCode1::N => Action::Next.into(),
-        KeyCode1::Q => Action::Exit.into(),
-        KeyCode1::W => Action::Exit.into(),
-        _ => None,
+impl Action {
+    fn from(e: &CGEvent) -> Option<Self> {
+        // let flags = e.get_flags();
+        // let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
+        let kc = KeyCode1::from(e);
+        match kc {
+            KeyCode1::P => Self::Prev.into(),
+            KeyCode1::O | KeyCode1::Return => Self::Open.into(),
+            KeyCode1::N => Self::Next.into(),
+            KeyCode1::Q => Self::Exit.into(),
+            KeyCode1::W => Self::Exit.into(),
+            _ => None,
+        }
     }
 }
+
 
 #[repr(isize)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -230,7 +233,7 @@ impl App {
             return;
         }
 
-        if let Some(a) = action(e) {
+        if let Some(a) = Action::from(e) {
             match a {
                 Action::Next => self.move_by(Dir::Next),
                 Action::Prev => self.move_by(Dir::Prev),
