@@ -1,21 +1,16 @@
 macro_rules! gen_keycode {
     ($name:ident { $($constant:ident = $value:expr),* }) => {
         #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        #[repr(u16)]
         pub enum $name {
             $($constant),*
         }
 
-        impl $name {
-            pub fn from_constant(value: i16) -> Self {
+        impl From<u16> for $name {
+            fn from(value: u16) -> Self {
                 match value {
                     $($value => (Self::$constant),)*
                     _=> todo!()
-                }
-            }
-
-            pub fn to_constant(&self) -> i16 {
-                match self {
-                    $(Self::$constant => $value,)*
                 }
             }
         }

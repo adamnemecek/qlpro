@@ -53,7 +53,7 @@ pub trait CGEventExt {
 impl CGEventExt for &CGEvent {
     fn key_code(&self) -> KeyCode {
         let c = self.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
-        KeyCode::from_constant(c as i16)
+        (c as u16).into()
     }
 }
 
