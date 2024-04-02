@@ -173,7 +173,7 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
 fn action(e: &CGEvent) -> Option<Action> {
     let flags = e.get_flags();
 
-    let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
+    // let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
     let kc = keycode(e);
     match kc {
         KeyCode1::P => Action::Prev.into(),
@@ -193,7 +193,7 @@ enum Dir {
 }
 
 struct App {
-    p: Child,
+    ql: Child,
     paths: Vec<std::path::PathBuf>,
     index: usize,
 }
@@ -201,8 +201,8 @@ struct App {
 impl App {
     pub fn new(paths: Vec<std::path::PathBuf>) -> Self {
         assert!(!paths.is_empty());
-        let p = open(&paths[0].to_string_lossy());
-        Self { p, paths, index: 0 }
+        let ql = quick_look(&paths[0].to_string_lossy());
+        Self { ql, paths, index: 0 }
     }
 
     fn current_path<'a>(&'a self) -> std::borrow::Cow<'a, str> {
@@ -215,12 +215,12 @@ impl App {
         if !indices.contains(&new_index) {
             return;
         }
-        let _ = self.p.kill();
+        let _ = self.ql.kill();
 
         self.index = new_index as _;
         let path = &self.current_path();
         println!("{:?}", path);
-        self.p = quick_look(path);
+        self.ql = quick_look(path);
     }
 
     pub fn handle(&mut self, e: &CGEvent) {
@@ -233,19 +233,20 @@ impl App {
             match a {
                 Action::Next => self.move_by(Dir::Next),
                 Action::Prev => self.move_by(Dir::Prev),
-                Action::Open => {
-                    open(&self.current_path());
-                }
+                Action::Open => _ = open(&self.current_path()),
                 Action::Exit => std::process::exit(0),
             }
-        } else {
         }
-        // println!("{:?}", a);
     }
 }
 
 fn main() {
-    let paths = paths().unwrap();
+    let paths = if let Some(paths) = paths() {
+        paths
+    } else {
+        println!("Usage: Pass in the list of pdfs");
+        return;
+    };
 
     // let mut app = App::new(paths);
     let app = std::rc::Rc::new(RefCell::new(App::new(paths)));
