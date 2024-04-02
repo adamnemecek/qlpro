@@ -22,7 +22,7 @@ macro_rules! gen_keycode {
     };
 }
 
-gen_keycode!(KeyCode1 {
+gen_keycode!(KeyCode {
     A = 0x00,
     S = 0x01,
     D = 0x02,

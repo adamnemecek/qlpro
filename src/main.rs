@@ -47,13 +47,13 @@ fn open(path: &str) -> Child {
 }
 
 pub trait CGEventExt {
-    fn key_code(&self) -> KeyCode1;
+    fn key_code(&self) -> KeyCode;
 }
 
 impl CGEventExt for &CGEvent {
-    fn key_code(&self) -> KeyCode1 {
+    fn key_code(&self) -> KeyCode {
         let c = self.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
-        KeyCode1::from_constant(c as i16)
+        KeyCode::from_constant(c as i16)
     }
 }
 
@@ -140,10 +140,10 @@ impl Action {
         // let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
         let kc = e.key_code();
         match kc {
-            KeyCode1::P => Self::Prev.into(),
-            KeyCode1::N => Self::Next.into(),
-            KeyCode1::O | KeyCode1::Return => Self::Open.into(),
-            KeyCode1::Q | KeyCode1::W => Self::Exit.into(),
+            KeyCode::P => Self::Prev.into(),
+            KeyCode::N => Self::Next.into(),
+            KeyCode::O | KeyCode::Return => Self::Open.into(),
+            KeyCode::Q | KeyCode::W => Self::Exit.into(),
             _ => None,
         }
     }
