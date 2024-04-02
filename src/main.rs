@@ -197,16 +197,25 @@ struct App {
     index: usize,
 }
 
+// fn indices<T>(a:&[T])->std::ops::Range<usize> {
+
+// }
+
 impl App {
     pub fn new(paths: Vec<std::path::PathBuf>) -> Self {
         assert!(!paths.is_empty());
-        let z = &paths[0];
-        let p = open(&z.to_string_lossy());
+        let p = open(&paths[0].to_string_lossy());
         Self { p, paths, index: 0 }
     }
 
     fn move_by(&mut self, delta: Dir) {
-        let x = delta as isize;
+        let new_index = self.index as isize + delta as isize;
+        let indices = 0..self.paths.len() as isize;
+        if !indices.contains(&new_index) {
+            return;
+        }
+        self.index = new_index as _;
+        self.p = quick_look(&self.paths[self.index].to_string_lossy());
     }
 
     pub fn handle(&mut self, e: &CGEvent) {
@@ -220,7 +229,7 @@ impl App {
             Action::Next => self.move_by(Dir::Next),
             Action::Prev => self.move_by(Dir::Prev),
             Action::Open => {
-                // open(path)
+                open(&self.paths[self.index].to_string_lossy());
             }
             Action::Exit => std::process::exit(0),
         }
@@ -247,7 +256,7 @@ fn main() {
     // use core_foundation::base::msg_sen
     // macro
 
-    println!("{}", q);
+    // println!("{}", q);
 
     // MyEnum::A;
     CFRunLoop::run_current();
