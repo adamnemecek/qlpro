@@ -49,12 +49,14 @@ fn open(path: &str) -> Child {
     Command::new("/usr/bin/open").args(&[path]).spawn().unwrap()
 }
 
-// use core_graphics::event::CGKeyCode;
+pub trait CGEventExt {
+    fn key_code(&self) -> KeyCode1;
+}
 
-impl KeyCode1 {
-    fn from(e: &CGEvent) -> Self {
-        let c = e.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
-        Self::from_constant(c as i16)
+impl CGEventExt for &CGEvent {
+    fn key_code(&self) -> KeyCode1 {
+        let c = self.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
+        KeyCode1::from_constant(c as i16)
     }
 }
 
@@ -140,7 +142,7 @@ impl Action {
     fn from(e: &CGEvent) -> Option<Self> {
         // let flags = e.get_flags();
         // let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
-        let kc = KeyCode1::from(e);
+        let kc = e.key_code();
         match kc {
             KeyCode1::P => Self::Prev.into(),
             KeyCode1::N => Self::Next.into(),
@@ -174,9 +176,9 @@ impl App {
         Self { ql, paths, index: 0 }
     }
 
-    fn current_path<'a>(&'a self) -> (&str,std::borrow::Cow<'a, str>) {
+    fn current_path<'a>(&'a self) -> (&str, std::borrow::Cow<'a, str>) {
         // let p =self.paths[self.index];
-        (&self.paths[self.index].0,self.paths[self.index].1.to_string_lossy())
+        (&self.paths[self.index].0, self.paths[self.index].1.to_string_lossy())
     }
 
     fn move_by(&mut self, delta: Dir) {
