@@ -51,15 +51,15 @@ fn keycode(e: &CGEvent) -> i64 {
     e.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE)
 }
 
-fn listen(f: impl Fn(CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
+fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
     let tap = CGEventTap::new(
         CGEventTapLocation::Session,
         CGEventTapPlacement::HeadInsertEventTap,
-        CGEventTapOptions::Default,
+        CGEventTapOptions::ListenOnly,
         vec![CGEventType::KeyDown],
         move |_, _, ev| {
-            f(ev.to_owned());
-            Some(ev.to_owned())
+            f(ev);
+            None
         },
     )?;
 
@@ -138,21 +138,21 @@ fn to_string(string_ref: CFStringRef) -> &'static str {
 fn front_most_application() -> &'static str {
     use cocoa::base::id;
     unsafe {
-    let workspace: id = msg_send![class!(NSWorkspace), sharedWorkspace];
-    let front_app: id = msg_send![workspace, frontmostApplication];
-    let bundle_id: CFStringRef = msg_send![front_app, bundleIdentifier];
-    // bundleID
-    to_string(bundle_id)
+        let workspace: id = msg_send![class!(NSWorkspace), sharedWorkspace];
+        let front_app: id = msg_send![workspace, frontmostApplication];
+        let bundle_id: CFStringRef = msg_send![front_app, bundleIdentifier];
+        // bundleID
+        to_string(bundle_id)
     }
 }
 
 fn main() {
-    // let tap = listen(|e| println!("{}", keycode(&e))).unwrap();
+    let tap = listen(|e| println!("{}", keycode(e))).unwrap();
 
     // quick_look("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
     // use core_foundation::base::msg_sen
     // macro
-    let q =front_most_application();
+    let q = front_most_application();
     println!("{}", q);
 
     // MyEnum::A;
