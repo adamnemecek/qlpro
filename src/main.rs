@@ -36,16 +36,10 @@ fn open(path: &str) {
 }
 
 use core_graphics::event::{
-    CGEvent,
-    CGEventTap,
-    CGEventTapLocation,
-    CGEventTapOptions,
-    CGEventTapPlacement,
-    CGEventType,
-    EventField, KeyCode,
+    CGEvent, CGEventFlags, CGEventMask, CGEventTap, CGEventTapLocation, CGEventTapOptions, CGEventTapPlacement, CGEventType, EventField
 };
 
-use core_graphics::event::CGKeyCode;
+// use core_graphics::event::CGKeyCode;
 
 fn keycode(e: &CGEvent) -> KeyCode1 {
     let c = e.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
@@ -157,8 +151,8 @@ enum Action {
 }
 
 fn paths() -> Option<Vec<std::path::PathBuf>> {
-    let paths: Vec<_> = std::env::args().collect();
-    if paths.len() <= 1 {
+    let paths: Vec<_> = std::env::args().skip(1).collect();
+    if paths.is_empty() {
         return None;
     }
 
@@ -171,15 +165,23 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
     }).collect())
 }
 
+struct KeyEvent {
+    key_code: KeyCode1,
+    flags: usize
+
+}
+
 fn main() {
     // for e in  {
     //     println!("{}", e);
     // }
     println!("{:?}", paths());
-    todo!();
 
     let tap = listen(|e| {
         // if front_most_application() == "com.apple.quicklook.qlmanage" {
+            let flags = e.get_flags();
+            
+            flags.contains(CGEventFlags::CGEventFlagCommand);
             println!("{}", front_most_application());
             println!("{:?}", keycode(e));
         // }
