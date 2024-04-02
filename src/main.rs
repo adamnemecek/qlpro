@@ -5,7 +5,10 @@ use {
     core_foundation::{
         runloop::CFRunLoop,
         string::{
-            kCFStringEncodingUTF8, CFString, CFStringGetCStringPtr, CFStringRef
+            kCFStringEncodingUTF8,
+            CFString,
+            CFStringGetCStringPtr,
+            CFStringRef,
         },
     },
 
