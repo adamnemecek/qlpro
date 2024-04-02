@@ -135,26 +135,15 @@ fn to_string(string_ref: CFStringRef) -> &'static str {
     }
 }
 
-unsafe fn front_most_application() {
+fn front_most_application() -> &'static str {
     use cocoa::base::id;
-    // use objc::class;
+    unsafe {
     let workspace: id = msg_send![class!(NSWorkspace), sharedWorkspace];
     let front_app: id = msg_send![workspace, frontmostApplication];
     let bundle_id: CFStringRef = msg_send![front_app, bundleIdentifier];
     // bundleID
-    let s = to_string(bundle_id);
-    println!("{:?}", s);
-    // let z = CFString::from_static_string("com.apple.quicklook.qlmanage");
-    // println!("{:?}", &z == *bundle_id);
-    // let s: std::borrow::Cow<'_, str> = bundleID.into();
-    // println!("{:?}", bundleID.as_str());
-    // let z = bundleID.as_ref().unwrap();
-    // let q= z.to_owned();
-    // let t =z.borrow();
-    //    let qq: std::borrow::Cow<'static, str> = z.into();
-    // let r = std::borrow::Cow::from(bundleID);
-    // let o = bundleID.to_owned();
-    // let i = o.to_raw_parts();
+    to_string(bundle_id)
+    }
 }
 
 fn main() {
@@ -163,7 +152,8 @@ fn main() {
     // quick_look("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
     // use core_foundation::base::msg_sen
     // macro
-    unsafe { front_most_application() };
+    let q =front_most_application();
+    println!("{}", q);
 
     // MyEnum::A;
     CFRunLoop::run_current();
