@@ -165,17 +165,13 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
     }).collect())
 }
 
-struct KeyEvent {
-    key_code: KeyCode1,
-    flags: usize
 
-}
 
 fn main() {
     // for e in  {
     //     println!("{}", e);
     // }
-    println!("{:?}", paths());
+    let paths = paths().unwrap();
 
     let tap = listen(|e| {
         // if front_most_application() == "com.apple.quicklook.qlmanage" {
