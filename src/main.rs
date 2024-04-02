@@ -42,13 +42,15 @@ use core_graphics::event::{
     CGEventTapOptions,
     CGEventTapPlacement,
     CGEventType,
-    EventField,
+    EventField, KeyCode,
 };
 
 use core_graphics::event::CGKeyCode;
 
-fn keycode(e: &CGEvent) -> i64 {
-    e.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE)
+fn keycode(e: &CGEvent) -> KeyCode1 {
+    let c = e.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
+    let z = crate::KeyCode1::from_constant(c as i16);
+    z
 }
 
 fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
@@ -169,7 +171,13 @@ fn main() {
     //     println!("{}", e);
     // }
 
-    let tap = listen(|e| println!("{}", keycode(e))).unwrap();
+    let tap = listen(|e| {
+        // if front_most_application() == "com.apple.quicklook.qlmanage" {
+            println!("{}", front_most_application());
+            println!("{:?}", keycode(e));
+        // }
+    })
+    .unwrap();
 
     // quick_look("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
     // use core_foundation::base::msg_sen
