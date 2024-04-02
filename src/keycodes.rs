@@ -1,4 +1,4 @@
-macro_rules! enum_with_constants {
+macro_rules! gen_keycode {
     ($name:ident { $($constant:ident = $value:expr),* }) => {
         #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
         pub enum $name {
@@ -22,7 +22,7 @@ macro_rules! enum_with_constants {
     };
 }
 
-enum_with_constants!(KeyCode1 {
+gen_keycode!(KeyCode1 {
     A = 0x00,
     S = 0x01,
     D = 0x02,
