@@ -61,11 +61,11 @@ fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, (
     let tap = CGEventTap::new(
         CGEventTapLocation::Session,
         CGEventTapPlacement::HeadInsertEventTap,
-        CGEventTapOptions::ListenOnly,
+        CGEventTapOptions::Default,
         vec![CGEventType::KeyDown],
         move |_, _, ev| {
             f(ev);
-            None
+            Some(ev.to_owned())
         },
     )?;
 
@@ -163,17 +163,22 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
     }
 
     let cur_dir = std::env::current_dir().unwrap();
+    let paths: Vec<_> = paths
+        .iter()
+        .map(|x| {
+            let mut p = cur_dir.clone();
+            p.push(x);
+            p
+        })
+        .collect();
 
-    Some(
-        paths
-            .iter()
-            .map(|x| {
-                let mut p = cur_dir.clone();
-                p.push(x);
-                p
-            })
-            .collect(),
-    )
+    let non: Vec<_> = paths.iter().filter(|x| !x.exists()).collect();
+
+    if !non.is_empty() {
+        println!("{:?} don't exist", non);
+        return None;
+    }
+    Some(paths)
 }
 
 impl Action {
@@ -238,15 +243,16 @@ impl App {
             return;
         }
 
-        if let Some(a) = Action::from(e) {
-            match a {
-                Action::Next => self.move_by(Dir::Next),
-                Action::Prev => self.move_by(Dir::Prev),
-                Action::Open => _ = open(&self.current_path()),
-                Action::Exit => {
-                    _ = self.ql.kill();
-                    std::process::exit(0)
-                }
+        let Some(a) = Action::from(e) else {
+            return;
+        };
+        match a {
+            Action::Next => self.move_by(Dir::Next),
+            Action::Prev => self.move_by(Dir::Prev),
+            Action::Open => _ = open(&self.current_path()),
+            Action::Exit => {
+                _ = self.ql.kill();
+                std::process::exit(0)
             }
         }
     }
