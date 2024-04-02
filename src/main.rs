@@ -58,17 +58,18 @@ impl KeyCode1 {
 }
 
 fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
-    let tap = CGEventTap::new(
-        CGEventTapLocation::Session,
-        CGEventTapPlacement::HeadInsertEventTap,
-        CGEventTapOptions::Default,
-        vec![CGEventType::KeyDown],
-        move |_, _, ev| {
-            f(ev);
-            // Some(ev.to_owned())
-            None
-        },
-    )?;
+    let tap =
+        CGEventTap::new(
+            CGEventTapLocation::Session,
+            CGEventTapPlacement::HeadInsertEventTap,
+            CGEventTapOptions::Default,
+            vec![CGEventType::KeyDown],
+            move |_, _, ev| {
+                f(ev);
+                // Some(ev.to_owned())
+                None
+            },
+        )?;
 
     let source = tap.mach_port.create_runloop_source(0)?;
     let r = CFRunLoop::get_current();
@@ -77,7 +78,6 @@ fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, (
 
     Ok(tap)
 }
-
 
 fn to_string(string_ref: CFStringRef) -> &'static str {
     // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
@@ -108,7 +108,7 @@ enum Action {
     Exit,
 }
 
-fn paths() -> Option<Vec<std::path::PathBuf>> {
+fn paths() -> Option<Vec<(String, std::path::PathBuf)>> {
     let paths: Vec<_> = std::env::args().skip(1).collect();
     if paths.is_empty() {
         return None;
@@ -118,13 +118,15 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
     let paths: Vec<_> = paths
         .iter()
         .map(|x| {
-            let mut p = cur_dir.clone();
-            p.push(x);
-            p
+            (x.clone(), {
+                let mut p = cur_dir.clone();
+                p.push(x);
+                p
+            })
         })
         .collect();
 
-    let non: Vec<_> = paths.iter().filter(|x| !x.exists()).collect();
+    let non: Vec<_> = paths.iter().filter(|x| !x.1.exists()).collect();
 
     if !non.is_empty() {
         println!("{:?} don't exist", non);
@@ -158,21 +160,22 @@ enum Dir {
 
 struct App {
     ql: Child,
-    paths: Vec<std::path::PathBuf>,
+    paths: Vec<(String, std::path::PathBuf)>,
     index: usize,
 }
 
 impl App {
-    pub fn new(paths: Vec<std::path::PathBuf>) -> Self {
+    pub fn new(paths: Vec<(String, std::path::PathBuf)>) -> Self {
         assert!(!paths.is_empty());
-        let path = &paths[0].to_string_lossy();
-        println!("{:?}", path);
+        let path = &paths[0].0;
+        println!("{:?}", &paths[0].1);
         let ql = quick_look(path);
         Self { ql, paths, index: 0 }
     }
 
-    fn current_path<'a>(&'a self) -> std::borrow::Cow<'a, str> {
-        self.paths[self.index].to_string_lossy()
+    fn current_path<'a>(&'a self) -> (&str,std::borrow::Cow<'a, str>) {
+        // let p =self.paths[self.index];
+        (&self.paths[self.index].0,self.paths[self.index].1.to_string_lossy())
     }
 
     fn move_by(&mut self, delta: Dir) {
@@ -185,8 +188,8 @@ impl App {
 
         self.index = new_index as _;
         let path = &self.current_path();
-        println!("{:?}", path);
-        self.ql = quick_look(path);
+        println!("{:?}", path.0);
+        self.ql = quick_look(&path.1);
     }
 
     pub fn handle(&mut self, e: &CGEvent) {
@@ -201,7 +204,7 @@ impl App {
         match a {
             Action::Next => self.move_by(Dir::Next),
             Action::Prev => self.move_by(Dir::Prev),
-            Action::Open => _ = open(&self.current_path()),
+            Action::Open => _ = open(&self.current_path().1),
             Action::Exit => {
                 _ = self.ql.kill();
                 std::process::exit(0)
@@ -226,7 +229,6 @@ fn main() {
 
     CFRunLoop::run_current();
 }
-
 
 // pub trait NSWorkspace {
 
