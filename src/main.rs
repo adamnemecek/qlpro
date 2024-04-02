@@ -243,16 +243,17 @@ impl App {
                 Action::Next => self.move_by(Dir::Next),
                 Action::Prev => self.move_by(Dir::Prev),
                 Action::Open => _ = open(&self.current_path()),
-                Action::Exit => std::process::exit(0),
+                Action::Exit => {
+                    _ = self.ql.kill();
+                    std::process::exit(0)
+                }
             }
         }
     }
 }
 
 fn main() {
-    let paths = if let Some(paths) = paths() {
-        paths
-    } else {
+    let Some(paths) = paths() else {
         println!("Usage: Pass in the list of pdfs");
         return;
     };
