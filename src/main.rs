@@ -33,9 +33,9 @@ use {
 mod keycodes;
 pub use keycodes::*;
 
-fn quick_look(path: &str) -> Child {
+fn quick_look(path: &File) -> Child {
     Command::new("/usr/bin/qlmanage")
-        .args(&["-p", path])
+        .args(&["-p", path.1])
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .spawn()
@@ -107,7 +107,7 @@ enum Action {
     Exit,
 }
 
-fn paths() -> Option<Vec<(String, std::path::PathBuf)>> {
+fn paths() -> Option<Vec<File>> {
     let paths: Vec<_> = std::env::args().skip(1).collect();
     if paths.is_empty() {
         return None;
@@ -117,7 +117,7 @@ fn paths() -> Option<Vec<(String, std::path::PathBuf)>> {
     let paths: Vec<_> = paths
         .iter()
         .map(|x| {
-            (x.clone(), {
+            File(x.clone(), {
                 let mut p = cur_dir.clone();
                 p.push(x);
                 p
@@ -128,7 +128,7 @@ fn paths() -> Option<Vec<(String, std::path::PathBuf)>> {
     let non: Vec<_> = paths.iter().filter(|x| !x.1.exists()).collect();
 
     if !non.is_empty() {
-        println!("{:?} don't exist", non);
+        println!("{:?} don't exist", non.iter().map(|x| &x.0).collect::<Vec<_>>());
         return None;
     }
     Some(paths)
@@ -158,12 +158,15 @@ enum Dir {
 
 struct App {
     ql: Child,
-    paths: Vec<(String, std::path::PathBuf)>,
+    paths: Vec<File>,
     cursor: usize,
 }
 
+// #[derive(Debug)]
+struct File(pub String, pub std::path::PathBuf);
+
 impl App {
-    pub fn new(paths: Vec<(String, std::path::PathBuf)>) -> Self {
+    pub fn new(paths: Vec<File>) -> Self {
         assert!(!paths.is_empty());
         let path = &paths[0].0;
         println!("{}", &paths[0].0);
