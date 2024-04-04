@@ -34,6 +34,7 @@ mod keycodes;
 pub use keycodes::*;
 
 fn quick_look(path: &str) -> Child {
+    println!("{}", &path);
     Command::new("/usr/bin/qlmanage")
         .args(&["-p", path])
         .stdout(std::process::Stdio::null())
@@ -169,7 +170,7 @@ impl App {
     pub fn new(paths: Vec<File>) -> Self {
         assert!(!paths.is_empty());
         let path = &paths[0].0;
-        println!("{}", &paths[0].0);
+
         let ql = quick_look(path);
         Self { ql, paths, cursor: 0 }
     }
@@ -189,7 +190,6 @@ impl App {
 
         self.cursor = new_cursor as _;
         let path = &self.current_path();
-        println!("{}", path.0);
         self.ql = quick_look(&path.1);
     }
 
