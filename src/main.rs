@@ -33,9 +33,9 @@ use {
 mod keycodes;
 pub use keycodes::*;
 
-fn quick_look(path: &File) -> Child {
+fn quick_look(path: &str) -> Child {
     Command::new("/usr/bin/qlmanage")
-        .args(&["-p", path.1])
+        .args(&["-p", path])
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .spawn()
