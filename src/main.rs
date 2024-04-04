@@ -99,7 +99,7 @@ fn front_most_application() -> &'static str {
         to_string(bundle_id)
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 
 enum Action {
     Next,
