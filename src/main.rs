@@ -34,6 +34,7 @@ mod keycodes;
 pub use keycodes::*;
 
 fn quick_look(path: &str) -> Child {
+    // it makes sense to just like trim the last part since it can be passed in as both global and local
     println!("{}", &path);
     Command::new("/usr/bin/qlmanage")
         .args(&["-p", path])
@@ -81,13 +82,19 @@ fn listen(f: impl Fn(&CGEvent) -> bool + 'static) -> Result<CGEventTap<'static>,
     Ok(tap)
 }
 
-fn to_string(string_ref: CFStringRef) -> &'static str {
-    // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
-    unsafe {
-        let char_ptr = CFStringGetCStringPtr(string_ref, kCFStringEncodingUTF8);
-        assert!(!char_ptr.is_null());
-        let c_str = std::ffi::CStr::from_ptr(char_ptr);
-        c_str.to_str().unwrap()
+pub trait CFStringExt {
+    fn as_str(&self) -> &'static str;
+}
+
+impl CFStringExt for CFStringRef {
+    fn as_str(&self) -> &'static str {
+        // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
+        unsafe {
+            let char_ptr = CFStringGetCStringPtr(*self, kCFStringEncodingUTF8);
+            assert!(!char_ptr.is_null());
+            let c_str = std::ffi::CStr::from_ptr(char_ptr);
+            c_str.to_str().unwrap()
+        }
     }
 }
 
@@ -97,7 +104,7 @@ fn front_most_application() -> &'static str {
         let workspace: id = msg_send![class!(NSWorkspace), sharedWorkspace];
         let front_app: id = msg_send![workspace, frontmostApplication];
         let bundle_id: CFStringRef = msg_send![front_app, bundleIdentifier];
-        to_string(bundle_id)
+        bundle_id.as_str()
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
@@ -109,7 +116,7 @@ enum Action {
     Exit,
 }
 
-fn paths() -> Option<Vec<File>> {
+fn paths() -> Option<Vec<FileLoc>> {
     let paths: Vec<_> = std::env::args().skip(1).collect();
     if paths.is_empty() {
         return None;
@@ -119,7 +126,7 @@ fn paths() -> Option<Vec<File>> {
     let paths: Vec<_> = paths
         .iter()
         .map(|x| {
-            File(x.clone(), {
+            FileLoc(x.clone(), {
                 let mut p = cur_dir.clone();
                 p.push(x);
                 p
@@ -160,15 +167,15 @@ enum Dir {
 
 struct App {
     ql: Child,
-    paths: Vec<File>,
+    paths: Vec<FileLoc>,
     cursor: usize,
 }
 
 #[derive(Debug)]
-struct File(pub String, pub std::path::PathBuf);
+struct FileLoc(pub String, pub std::path::PathBuf);
 
 impl App {
-    pub fn new(paths: Vec<File>) -> Self {
+    pub fn new(paths: Vec<FileLoc>) -> Self {
         assert!(!paths.is_empty());
         let path = &paths[0].0;
 
@@ -191,7 +198,7 @@ impl App {
 
         self.cursor = new_cursor as _;
         let path = &self.current_path();
-        self.ql = quick_look(&path.1);
+        self.ql = quick_look(&path.0);
     }
 
     pub fn handle(&mut self, e: &CGEvent) -> bool {
@@ -217,12 +224,21 @@ impl App {
 }
 
 fn main() {
+    // let mut z = std::path::PathBuf::new();
+    // z.push("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
+    // println!("{:?}", z);
+
+    // let c = z.components().last();
+    // println!("{:?}", c);
+    // return;
+    // let p = z.as_path().components();
+
     let Some(paths) = paths() else {
         println!("Usage: Pass in the list of files");
         return;
     };
 
-    println!("{:?}", paths);
+    // println!("{:?}", paths);
     //
     let app = std::rc::Rc::new(RefCell::new(App::new(paths)));
     let _tap = listen(move |e| {

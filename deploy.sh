@@ -1,0 +1,1 @@
+cp target/debug/quicklookpro /Users/adamnemecek/.cargo/bin/
