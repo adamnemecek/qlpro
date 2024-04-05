@@ -58,19 +58,20 @@ impl CGEventExt for &CGEvent {
     }
 }
 
-fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, ()> {
-    let tap =
-        CGEventTap::new(
-            CGEventTapLocation::Session,
-            CGEventTapPlacement::HeadInsertEventTap,
-            CGEventTapOptions::Default,
-            vec![CGEventType::KeyDown],
-            move |_, _, ev| {
-                f(ev);
+fn listen(f: impl Fn(&CGEvent) -> bool + 'static) -> Result<CGEventTap<'static>, ()> {
+    let tap = CGEventTap::new(
+        CGEventTapLocation::Session,
+        CGEventTapPlacement::HeadInsertEventTap,
+        CGEventTapOptions::Default,
+        vec![CGEventType::KeyDown],
+        move |_, _, ev| {
+            if f(ev) {
+                None
+            } else {
                 Some(ev.to_owned())
-                // None
-            },
-        )?;
+            }
+        },
+    )?;
 
     let source = tap.mach_port.create_runloop_source(0)?;
     let r = CFRunLoop::get_current();
@@ -193,14 +194,14 @@ impl App {
         self.ql = quick_look(&path.1);
     }
 
-    pub fn handle(&mut self, e: &CGEvent) {
+    pub fn handle(&mut self, e: &CGEvent) -> bool {
         let is_preview = front_most_application() == "com.apple.quicklook.qlmanage";
         if !is_preview {
-            return;
+            return false;
         }
 
         let Some(a) = Action::from(e) else {
-            return;
+            return true;
         };
         match a {
             Action::Next => self.move_by(Dir::Next),
@@ -211,6 +212,7 @@ impl App {
                 std::process::exit(0)
             }
         }
+        true
     }
 }
 
@@ -221,11 +223,11 @@ fn main() {
     };
 
     println!("{:?}", paths);
-
+    //
     let app = std::rc::Rc::new(RefCell::new(App::new(paths)));
     let _tap = listen(move |e| {
         let mut a = app.as_ref().borrow_mut();
-        a.handle(e);
+        a.handle(e)
     })
     .unwrap();
 
