@@ -19,7 +19,7 @@
                     "kind": "bin"
                 }
             },
-            "args": [],
+            "args": ["/Users/adamnemecek/adjoint/papers/Zhang2017.pdf", "/Users/adamnemecek/adjoint/papers/Zhang2018.pdf"],
             "cwd": "${workspaceFolder}"
         },
         {

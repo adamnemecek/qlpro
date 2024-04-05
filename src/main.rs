@@ -67,8 +67,8 @@ fn listen(f: impl Fn(&CGEvent) -> () + 'static) -> Result<CGEventTap<'static>, (
             vec![CGEventType::KeyDown],
             move |_, _, ev| {
                 f(ev);
-                // Some(ev.to_owned())
-                None
+                Some(ev.to_owned())
+                // None
             },
         )?;
 
@@ -163,7 +163,7 @@ struct App {
     cursor: usize,
 }
 
-// #[derive(Debug)]
+#[derive(Debug)]
 struct File(pub String, pub std::path::PathBuf);
 
 impl App {
@@ -219,6 +219,8 @@ fn main() {
         println!("Usage: Pass in the list of files");
         return;
     };
+
+    println!("{:?}", paths);
 
     let app = std::rc::Rc::new(RefCell::new(App::new(paths)));
     let _tap = listen(move |e| {
