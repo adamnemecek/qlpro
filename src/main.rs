@@ -35,7 +35,7 @@ pub use keycodes::*;
 
 fn quick_look(path: &std::path::Path) -> Child {
     // it makes sense to just like trim the last part since it can be passed in as both global and local
-    println!("{:?}", &path.components().last().unwrap());
+    println!("{}", &path.components().last().unwrap().as_os_str().to_str().unwrap());
     Command::new("/usr/bin/qlmanage")
         .args(&["-p", path.to_str().unwrap()])
         .stdout(std::process::Stdio::null())
@@ -116,17 +116,6 @@ enum Action {
     Exit,
 }
 
-// fn normalize(path: &str) -> Option<std::path::PathBuf> {
-//     let mut absolute_path = std::path::PathBuf::from(path);
-//     if !absolute_path.is_absolute() {
-//         let Ok(cwd) = std::env::current_dir() else {
-//             return None; // Failed to get current directory
-//         };
-//         absolute_path = cwd.join(path);
-//     }
-//     Some(absolute_path)
-// }
-
 fn paths() -> Option<Vec<std::path::PathBuf>> {
     let paths: Vec<_> = std::env::args().skip(1).collect();
     if paths.is_empty() {
@@ -145,33 +134,12 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
         absolute_path
     }).collect();
 
-    // let paths: Vec<_> = paths
-    //     .iter()
-    //     .map(|x| {
-    //         FileLoc(x.clone(), {
-    //             let mut p = cur_dir.clone();
-    //             p.push(x);
-    //             p
-    //         })
-    //     })
-    //     .collect();
-    // let paths1: Vec<_> = paths
-    // .iter()
-    // .map(|x| {
-    //     let mut path = std::path::PathBuf::new();
-    //     path.push(x);
+    let non: Vec<_> = paths.iter().filter(|x| !x.exists()).collect();
 
-    // })
-    // })
-
-    // .collect();
-
-    // let non: Vec<_> = paths.iter().filter(|x| !x.1.exists()).collect();
-
-    // if !non.is_empty() {
-        // println!("{:?} don't exist", non.iter().map(|x| &x.0).collect::<Vec<_>>());
-        // return None;
-    // }
+    if !non.is_empty() {
+        println!("{:?} don't exist", non);
+        return None;
+    }
     Some(paths)
 }
 
