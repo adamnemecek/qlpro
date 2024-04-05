@@ -177,19 +177,12 @@ struct App {
 impl App {
     pub fn new(paths: Vec<std::path::PathBuf>) -> Self {
         assert!(!paths.is_empty());
-        // let path = &paths[0].0;
 
         let ql = quick_look(&paths[0]);
         Self { ql, paths, cursor: 0 }
     }
 
-    // fn current_path<'a>(&'a self) -> (&str, std::borrow::Cow<'a, str>) {
-    //     // let p =self.paths[self.cursor];
-    //     (&self.paths[self.cursor].0, self.paths[self.cursor].1.to_string_lossy())
-    // }
     fn current_path<'a>(&'a self) -> &std::path::Path {
-        // let p =self.paths[self.cursor];
-        // (&self.paths[self.cursor].0, self.paths[self.cursor].1.to_string_lossy())
         &self.paths[self.cursor]
     }
 
