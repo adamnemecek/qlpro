@@ -33,6 +33,32 @@ use {
 mod keycodes;
 pub use keycodes::*;
 
+pub trait CGEventExt {
+    fn key_code(&self) -> KeyCode;
+}
+
+impl CGEventExt for &CGEvent {
+    fn key_code(&self) -> KeyCode {
+        let c = self.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
+        (c as u16).into()
+    }
+}
+pub trait CFStringExt {
+    fn as_str(&self) -> &'static str;
+}
+
+impl CFStringExt for CFStringRef {
+    fn as_str(&self) -> &'static str {
+        // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
+        unsafe {
+            let char_ptr = CFStringGetCStringPtr(*self, kCFStringEncodingUTF8);
+            assert!(!char_ptr.is_null());
+            let c_str = std::ffi::CStr::from_ptr(char_ptr);
+            c_str.to_str().unwrap()
+        }
+    }
+}
+
 fn quick_look(path: &std::path::Path) -> Child {
     // it makes sense to just like trim the last part since it can be passed in as both global and local
     println!("{}", &path.components().last().unwrap().as_os_str().to_str().unwrap());
@@ -44,19 +70,8 @@ fn quick_look(path: &std::path::Path) -> Child {
         .unwrap()
 }
 
-fn open(path:  &std::path::Path) -> Child {
+fn open(path: &std::path::Path) -> Child {
     Command::new("/usr/bin/open").args(&[path]).spawn().unwrap()
-}
-
-pub trait CGEventExt {
-    fn key_code(&self) -> KeyCode;
-}
-
-impl CGEventExt for &CGEvent {
-    fn key_code(&self) -> KeyCode {
-        let c = self.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
-        (c as u16).into()
-    }
 }
 
 fn listen(f: impl Fn(&CGEvent) -> bool + 'static) -> Result<CGEventTap<'static>, ()> {
@@ -80,22 +95,6 @@ fn listen(f: impl Fn(&CGEvent) -> bool + 'static) -> Result<CGEventTap<'static>,
     tap.enable();
 
     Ok(tap)
-}
-
-pub trait CFStringExt {
-    fn as_str(&self) -> &'static str;
-}
-
-impl CFStringExt for CFStringRef {
-    fn as_str(&self) -> &'static str {
-        // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
-        unsafe {
-            let char_ptr = CFStringGetCStringPtr(*self, kCFStringEncodingUTF8);
-            assert!(!char_ptr.is_null());
-            let c_str = std::ffi::CStr::from_ptr(char_ptr);
-            c_str.to_str().unwrap()
-        }
-    }
 }
 
 fn front_most_application() -> &'static str {
@@ -122,17 +121,18 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
         return None;
     }
 
-    let Ok(cwd) = std::env::current_dir() else {
-        todo!()
-    };
+    let Ok(cwd) = std::env::current_dir() else { todo!() };
 
-    let paths: Vec<_> = paths.iter().map(|path| {
-        let mut absolute_path = std::path::PathBuf::from(path);
-        if !absolute_path.is_absolute() {
-            absolute_path = cwd.join(path);
-        }
-        absolute_path
-    }).collect();
+    let paths: Vec<_> = paths
+        .iter()
+        .map(|path| {
+            let mut absolute_path = std::path::PathBuf::from(path);
+            if !absolute_path.is_absolute() {
+                absolute_path = cwd.join(path);
+            }
+            absolute_path
+        })
+        .collect();
 
     let non: Vec<_> = paths.iter().filter(|x| !x.exists()).collect();
 
