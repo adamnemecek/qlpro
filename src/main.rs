@@ -33,18 +33,18 @@ use {
 mod keycodes;
 pub use keycodes::*;
 
-fn quick_look(path: &str) -> Child {
+fn quick_look(path: &std::path::Path) -> Child {
     // it makes sense to just like trim the last part since it can be passed in as both global and local
-    println!("{}", &path);
+    println!("{:?}", &path.components().last().unwrap());
     Command::new("/usr/bin/qlmanage")
-        .args(&["-p", path])
+        .args(&["-p", path.to_str().unwrap()])
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .spawn()
         .unwrap()
 }
 
-fn open(path: &str) -> Child {
+fn open(path:  &std::path::Path) -> Child {
     Command::new("/usr/bin/open").args(&[path]).spawn().unwrap()
 }
 
@@ -116,30 +116,62 @@ enum Action {
     Exit,
 }
 
-fn paths() -> Option<Vec<FileLoc>> {
+// fn normalize(path: &str) -> Option<std::path::PathBuf> {
+//     let mut absolute_path = std::path::PathBuf::from(path);
+//     if !absolute_path.is_absolute() {
+//         let Ok(cwd) = std::env::current_dir() else {
+//             return None; // Failed to get current directory
+//         };
+//         absolute_path = cwd.join(path);
+//     }
+//     Some(absolute_path)
+// }
+
+fn paths() -> Option<Vec<std::path::PathBuf>> {
     let paths: Vec<_> = std::env::args().skip(1).collect();
     if paths.is_empty() {
         return None;
     }
 
-    let cur_dir = std::env::current_dir().unwrap();
-    let paths: Vec<_> = paths
-        .iter()
-        .map(|x| {
-            FileLoc(x.clone(), {
-                let mut p = cur_dir.clone();
-                p.push(x);
-                p
-            })
-        })
-        .collect();
+    let Ok(cwd) = std::env::current_dir() else {
+        todo!()
+    };
 
-    let non: Vec<_> = paths.iter().filter(|x| !x.1.exists()).collect();
+    let paths: Vec<_> = paths.iter().map(|path| {
+        let mut absolute_path = std::path::PathBuf::from(path);
+        if !absolute_path.is_absolute() {
+            absolute_path = cwd.join(path);
+        }
+        absolute_path
+    }).collect();
 
-    if !non.is_empty() {
-        println!("{:?} don't exist", non.iter().map(|x| &x.0).collect::<Vec<_>>());
-        return None;
-    }
+    // let paths: Vec<_> = paths
+    //     .iter()
+    //     .map(|x| {
+    //         FileLoc(x.clone(), {
+    //             let mut p = cur_dir.clone();
+    //             p.push(x);
+    //             p
+    //         })
+    //     })
+    //     .collect();
+    // let paths1: Vec<_> = paths
+    // .iter()
+    // .map(|x| {
+    //     let mut path = std::path::PathBuf::new();
+    //     path.push(x);
+
+    // })
+    // })
+
+    // .collect();
+
+    // let non: Vec<_> = paths.iter().filter(|x| !x.1.exists()).collect();
+
+    // if !non.is_empty() {
+        // println!("{:?} don't exist", non.iter().map(|x| &x.0).collect::<Vec<_>>());
+        // return None;
+    // }
     Some(paths)
 }
 
@@ -167,25 +199,30 @@ enum Dir {
 
 struct App {
     ql: Child,
-    paths: Vec<FileLoc>,
+    paths: Vec<std::path::PathBuf>,
     cursor: usize,
 }
 
-#[derive(Debug)]
-struct FileLoc(pub String, pub std::path::PathBuf);
+// #[derive(Debug)]
+// struct FileLoc(pub String, pub std::path::PathBuf);
 
 impl App {
-    pub fn new(paths: Vec<FileLoc>) -> Self {
+    pub fn new(paths: Vec<std::path::PathBuf>) -> Self {
         assert!(!paths.is_empty());
-        let path = &paths[0].0;
+        // let path = &paths[0].0;
 
-        let ql = quick_look(path);
+        let ql = quick_look(&paths[0]);
         Self { ql, paths, cursor: 0 }
     }
 
-    fn current_path<'a>(&'a self) -> (&str, std::borrow::Cow<'a, str>) {
+    // fn current_path<'a>(&'a self) -> (&str, std::borrow::Cow<'a, str>) {
+    //     // let p =self.paths[self.cursor];
+    //     (&self.paths[self.cursor].0, self.paths[self.cursor].1.to_string_lossy())
+    // }
+    fn current_path<'a>(&'a self) -> &std::path::Path {
         // let p =self.paths[self.cursor];
-        (&self.paths[self.cursor].0, self.paths[self.cursor].1.to_string_lossy())
+        // (&self.paths[self.cursor].0, self.paths[self.cursor].1.to_string_lossy())
+        &self.paths[self.cursor]
     }
 
     fn move_by(&mut self, delta: Dir) {
@@ -198,7 +235,7 @@ impl App {
 
         self.cursor = new_cursor as _;
         let path = &self.current_path();
-        self.ql = quick_look(&path.0);
+        self.ql = quick_look(&path);
     }
 
     pub fn handle(&mut self, e: &CGEvent) -> bool {
@@ -208,12 +245,12 @@ impl App {
         }
 
         let Some(a) = Action::from(e) else {
-            return true;
+            return false;
         };
         match a {
             Action::Next => self.move_by(Dir::Next),
             Action::Prev => self.move_by(Dir::Prev),
-            Action::Open => _ = open(&self.current_path().1),
+            Action::Open => _ = open(&self.current_path()),
             Action::Exit => {
                 _ = self.ql.kill();
                 std::process::exit(0)
