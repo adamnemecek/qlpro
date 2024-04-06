@@ -252,7 +252,7 @@ impl App {
 }
 
 fn main() {
-    let a = unsafe { check_accessibility_permission() };
+    let _ = unsafe { check_accessibility_permission() };
     // println!("premissins {}", a);
 
     let Some(paths) = paths() else {
