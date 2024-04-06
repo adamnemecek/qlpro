@@ -84,15 +84,14 @@ extern "C" {
 unsafe fn check_accessibility_permission() -> bool {
     use {
         core_foundation::{
-            base::FromVoid,
+            base::{ToVoid, FromVoid},
             dictionary::CFMutableDictionary,
             string::CFString,
         },
         std::ffi::c_void,
     };
-    use core_foundation::base::ToVoid;
 
-    let mut dict: CFMutableDictionary<core_foundation::string::CFString, core_foundation::number::CFNumber> =
+    let mut dict: CFMutableDictionary<CFString, core_foundation::number::CFNumber> =
         CFMutableDictionary::new();
 
     dict.add(
@@ -250,6 +249,9 @@ impl App {
 }
 
 fn main() {
+    let a = unsafe { check_accessibility_permission() };
+    // println!("premissins {}", a);
+
     let Some(paths) = paths() else {
         println!("Usage: Pass in the list of files");
         return;
