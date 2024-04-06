@@ -10,3 +10,4 @@ core-foundation = "*"
 core-graphics = "*"
 cocoa = "*"
 objc = "*"
+# accessibility = {git = "https://github.com/eiz/accessibility"}

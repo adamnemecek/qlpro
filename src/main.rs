@@ -74,6 +74,37 @@ fn open(path: &std::path::Path) -> Child {
     Command::new("/usr/bin/open").args(&[path]).spawn().unwrap()
 }
 
+#[link(name = "ApplicationServices", kind = "framework")]
+extern "C" {
+    pub fn AXAPIEnabled() -> bool;
+    pub fn AXIsProcessTrustedWithOptions(options: core_graphics::display::CFDictionaryRef) -> bool;
+    pub static kAXTrustedCheckOptionPrompt: CFStringRef;
+}
+
+unsafe fn check_accessibility_permission() -> bool {
+    use {
+        core_foundation::{
+            base::FromVoid,
+            dictionary::CFMutableDictionary,
+            string::CFString,
+        },
+        std::ffi::c_void,
+    };
+    use core_foundation::base::ToVoid;
+
+    let mut dict: CFMutableDictionary<core_foundation::string::CFString, core_foundation::number::CFNumber> =
+        CFMutableDictionary::new();
+
+    dict.add(
+        &CFString::from_void(kAXTrustedCheckOptionPrompt as *const c_void).to_owned(),
+        &1i64.into(),
+    );
+
+    let app_has_permissions = AXIsProcessTrustedWithOptions(dict.into_untyped().to_void() as *const _);
+
+    app_has_permissions
+}
+
 fn listen(f: impl Fn(&CGEvent) -> bool + 'static) -> Result<CGEventTap<'static>, ()> {
     let tap = CGEventTap::new(
         CGEventTapLocation::Session,
@@ -171,9 +202,6 @@ struct App {
     cursor: usize,
 }
 
-// #[derive(Debug)]
-// struct FileLoc(pub String, pub std::path::PathBuf);
-
 impl App {
     pub fn new(paths: Vec<std::path::PathBuf>) -> Self {
         assert!(!paths.is_empty());
@@ -222,15 +250,6 @@ impl App {
 }
 
 fn main() {
-    // let mut z = std::path::PathBuf::new();
-    // z.push("/Users/adamnemecek/adjoint/papers/Zhang2017.pdf");
-    // println!("{:?}", z);
-
-    // let c = z.components().last();
-    // println!("{:?}", c);
-    // return;
-    // let p = z.as_path().components();
-
     let Some(paths) = paths() else {
         println!("Usage: Pass in the list of files");
         return;
