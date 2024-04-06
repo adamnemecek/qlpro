@@ -84,15 +84,18 @@ extern "C" {
 unsafe fn check_accessibility_permission() -> bool {
     use {
         core_foundation::{
-            base::{ToVoid, FromVoid},
+            base::{
+                FromVoid,
+                ToVoid,
+            },
             dictionary::CFMutableDictionary,
+            number::CFNumber,
             string::CFString,
         },
         std::ffi::c_void,
     };
 
-    let mut dict: CFMutableDictionary<CFString, core_foundation::number::CFNumber> =
-        CFMutableDictionary::new();
+    let mut dict: CFMutableDictionary<CFString, CFNumber> = <_>::default();
 
     dict.add(
         &CFString::from_void(kAXTrustedCheckOptionPrompt as *const c_void).to_owned(),
