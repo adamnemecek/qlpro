@@ -1,5 +1,5 @@
 [package]
-name = "quicklookpro"
+name = "qlpro"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,3 +10,4 @@ core-foundation = "*"
 core-graphics = "*"
 cocoa = "*"
 objc = "*"
+signal-hook-registry = "*"

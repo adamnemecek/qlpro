@@ -13,7 +13,6 @@ use {
 
     core_graphics::event::{
         CGEvent,
-        // CGEventFlags,
         CGEventTap,
         CGEventTapLocation,
         CGEventTapOptions,
@@ -38,9 +37,10 @@ pub trait CGEventExt {
 }
 
 impl CGEventExt for &CGEvent {
+    #[inline]
     fn key_code(&self) -> KeyCode {
-        let c = self.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE);
-        (c as u16).into()
+        let c: u16 = self.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE) as _;
+        c.into()
     }
 }
 pub trait CFStringExt {
@@ -139,8 +139,8 @@ fn front_most_application() -> &'static str {
         bundle_id.as_str()
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 enum Action {
     Next,
     Prev,
@@ -262,6 +262,8 @@ fn main() {
 
     // println!("{:?}", paths);
     //
+    // signal_hook::flag::register(signal_hook::consts::SIGCHLD, Arc::clone(&term));
+   //s signal_hook_registry::register(signal_hook_registry::, action)
     let app = std::rc::Rc::new(RefCell::new(App::new(paths)));
     let _tap = listen(move |e| {
         let mut a = app.as_ref().borrow_mut();

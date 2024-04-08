@@ -7,15 +7,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'quicklookpro'",
+            "name": "Debug executable 'qlpro'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=quicklookpro",
-                    "--package=quicklookpro"
+                    "--bin=qlpro",
+                    "--package=qlpro"
                 ],
                 "filter": {
-                    "name": "quicklookpro",
+                    "name": "qlpro",
                     "kind": "bin"
                 }
             },
@@ -25,16 +25,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'quicklookpro'",
+            "name": "Debug unit tests in executable 'qlpro'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=quicklookpro",
-                    "--package=quicklookpro"
+                    "--bin=qlpro",
+                    "--package=qlpro"
                 ],
                 "filter": {
-                    "name": "quicklookpro",
+                    "name": "qlpro",
                     "kind": "bin"
                 }
             },

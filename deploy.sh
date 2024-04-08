@@ -1,1 +1,1 @@
-cp target/debug/quicklookpro /Users/adamnemecek/.cargo/bin/
+cp target/debug/qlpro /Users/adamnemecek/.cargo/bin/

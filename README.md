@@ -1,8 +1,8 @@
-# quicklookpro
+# qlpro
 
-`quicklookpro` is a CLI application for macOS to enable running previews from command line on multiple.
+`qlpro` is a CLI application for macOS to enable running previews from command line on multiple.
 
-Usage: `quicklookpro <files>`
+Usage: `qlpro <files>`
 
 The user can control the previews using keyboard:
 
