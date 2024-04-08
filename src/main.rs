@@ -10,7 +10,6 @@ use {
             CFStringRef,
         },
     },
-
     core_graphics::event::{
         CGEvent,
         CGEventTap,
@@ -263,7 +262,7 @@ fn main() {
     // println!("{:?}", paths);
     //
     // signal_hook::flag::register(signal_hook::consts::SIGCHLD, Arc::clone(&term));
-   //s signal_hook_registry::register(signal_hook_registry::, action)
+    //s signal_hook_registry::register(signal_hook_registry::, action)
     let app = std::rc::Rc::new(RefCell::new(App::new(paths)));
     let _tap = listen(move |e| {
         let mut a = app.as_ref().borrow_mut();
