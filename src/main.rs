@@ -19,12 +19,9 @@ use {
         CGEventType,
         EventField,
     },
-    std::{
-        cell::RefCell,
-        process::{
-            Child,
-            Command,
-        },
+    std::process::{
+        Child,
+        Command,
     },
 };
 
@@ -139,7 +136,6 @@ fn front_most_application() -> &'static str {
     }
 }
 
-
 fn paths() -> Option<Vec<std::path::PathBuf>> {
     let paths: Vec<_> = std::env::args().skip(1).collect();
     if paths.is_empty() {
@@ -174,8 +170,8 @@ enum Action {
     Prev,
     Open,
     Exit,
+    Important,
 }
-
 
 impl Action {
     fn from(e: &CGEvent) -> Option<Self> {
@@ -183,12 +179,14 @@ impl Action {
         // let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
         let kc = e.key_code();
         match kc {
-            KeyCode::P => Self::Prev.into(),
-            KeyCode::N => Self::Next.into(),
-            KeyCode::O | KeyCode::Return => Self::Open.into(),
-            KeyCode::Q | KeyCode::W => Self::Exit.into(),
-            _ => None,
+            KeyCode::P => Self::Prev,
+            KeyCode::N => Self::Next,
+            KeyCode::O | KeyCode::Return => Self::Open,
+            KeyCode::Q | KeyCode::W => Self::Exit,
+            KeyCode::I => Self::Important,
+            _ => return None,
         }
+        .into()
     }
 }
 
@@ -197,6 +195,10 @@ impl Action {
 enum Dir {
     Prev = -1,
     Next = 1,
+}
+
+fn is_preview_active() -> bool {
+    front_most_application() == "com.apple.quicklook.qlmanage"
 }
 
 struct App {
@@ -230,9 +232,17 @@ impl App {
         self.ql = quick_look(&path);
     }
 
+    // fn important(&self) {
+    // let current = self.current_path().ancestors().last().unwrap().as_os_str().as_;
+    // println!("{}", );
+    // let last = &self.current_path().components().as_path();
+    // use std::os::unix::fs::symlink;
+    // symlink(last.into(),last.into());//"_important".into());
+    // symlink("/origin_does_not_exist/", link_path).unwrap();
+    // }
+
     pub fn handle(&mut self, e: &CGEvent) -> bool {
-        let is_preview = front_most_application() == "com.apple.quicklook.qlmanage";
-        if !is_preview {
+        if !is_preview_active() {
             return false;
         }
 
@@ -243,6 +253,7 @@ impl App {
             Action::Next => self.move_cursor_by(Dir::Next),
             Action::Prev => self.move_cursor_by(Dir::Prev),
             Action::Open => _ = open(&self.current_path()),
+            Action::Important => todo!(),
             Action::Exit => {
                 _ = self.ql.kill();
                 std::process::exit(0)
@@ -265,7 +276,7 @@ fn main() {
     //
     // signal_hook::flag::register(signal_hook::consts::SIGCHLD, Arc::clone(&term));
     //s signal_hook_registry::register(signal_hook_registry::, action)
-    let app = std::rc::Rc::new(RefCell::new(App::new(paths)));
+    let app = std::rc::Rc::new(std::cell::RefCell::new(App::new(paths)));
     let _tap = listen(move |e| {
         let mut a = app.as_ref().borrow_mut();
         a.handle(e)
