@@ -77,7 +77,7 @@ extern "C" {
     pub static kAXTrustedCheckOptionPrompt: CFStringRef;
 }
 
-unsafe fn is_process_trusted() -> bool {
+fn is_process_trusted() -> bool {
     use {
         core_foundation::{
             base::{
@@ -93,14 +93,14 @@ unsafe fn is_process_trusted() -> bool {
 
     let mut dict: CFMutableDictionary<CFString, CFNumber> = <_>::default();
 
-    dict.add(
-        &CFString::from_void(kAXTrustedCheckOptionPrompt as *const c_void).to_owned(),
-        &1i64.into(),
-    );
+    unsafe {
+        dict.add(
+            &CFString::from_void(kAXTrustedCheckOptionPrompt as *const c_void).to_owned(),
+            &1i64.into(),
+        );
 
-    let app_has_permissions = AXIsProcessTrustedWithOptions(dict.into_untyped().to_void() as *const _);
-
-    app_has_permissions
+        AXIsProcessTrustedWithOptions(dict.into_untyped().to_void() as *const _)
+    }
 }
 
 fn listen(f: impl Fn(&CGEvent) -> bool + 'static) -> Result<CGEventTap<'static>, ()> {
@@ -264,7 +264,7 @@ impl App {
 }
 
 fn main() {
-    let _ = unsafe { is_process_trusted() };
+    let _ = is_process_trusted();
     // println!("premissins {}", a);
 
     let Some(paths) = paths() else {
