@@ -139,13 +139,6 @@ fn front_most_application() -> &'static str {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
-enum Action {
-    Next,
-    Prev,
-    Open,
-    Exit,
-}
 
 fn paths() -> Option<Vec<std::path::PathBuf>> {
     let paths: Vec<_> = std::env::args().skip(1).collect();
@@ -174,6 +167,15 @@ fn paths() -> Option<Vec<std::path::PathBuf>> {
     }
     Some(paths)
 }
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+enum Action {
+    Next,
+    Prev,
+    Open,
+    Exit,
+}
+
 
 impl Action {
     fn from(e: &CGEvent) -> Option<Self> {
