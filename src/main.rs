@@ -80,7 +80,7 @@ extern "C" {
     pub static kAXTrustedCheckOptionPrompt: CFStringRef;
 }
 
-unsafe fn check_accessibility_permission() -> bool {
+unsafe fn is_process_trusted() -> bool {
     use {
         core_foundation::{
             base::{
@@ -215,7 +215,7 @@ impl App {
         &self.paths[self.cursor]
     }
 
-    fn move_by(&mut self, delta: Dir) {
+    fn move_cursor_by(&mut self, delta: Dir) {
         let new_cursor = self.cursor as isize + delta as isize;
         let indices = 0..self.paths.len() as isize;
         if !indices.contains(&new_cursor) {
@@ -238,8 +238,8 @@ impl App {
             return false;
         };
         match a {
-            Action::Next => self.move_by(Dir::Next),
-            Action::Prev => self.move_by(Dir::Prev),
+            Action::Next => self.move_cursor_by(Dir::Next),
+            Action::Prev => self.move_cursor_by(Dir::Prev),
             Action::Open => _ = open(&self.current_path()),
             Action::Exit => {
                 _ = self.ql.kill();
@@ -251,7 +251,7 @@ impl App {
 }
 
 fn main() {
-    let _ = unsafe { check_accessibility_permission() };
+    let _ = unsafe { is_process_trusted() };
     // println!("premissins {}", a);
 
     let Some(paths) = paths() else {
