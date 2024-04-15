@@ -67,6 +67,28 @@ fn quick_look(path: &std::path::Path) -> Child {
         .unwrap()
 }
 
+fn pb_copy(paths: &std::collections::HashSet<std::path::PathBuf>)  {
+    use cli_clipboard::{ClipboardContext, ClipboardProvider};
+
+    let s: Vec<_> = paths.iter().map(|x| x.to_str().unwrap()).collect();
+    let joined = s.join("\n");
+    let mut ctx = ClipboardContext::new().unwrap();
+    // let the_string = "Hello, world!";
+    ctx.set_contents(joined).unwrap();
+    // assert_eq!(ctx.get_contents().unwrap(), the_string);
+    // ctx.clear().unwrap();
+
+    // let s: Vec<_> = paths.iter().map(|x| x.to_str().unwrap()).collect();
+    // let joined = s.join(" ");
+    // println!("{}", joined);
+    // Command::new("/usr/bin/pbcopy")
+    //     .arg(&joined)
+    //     // .stdout(std::process::Stdio::null())
+    //     // .stderr(std::process::Stdio::null())
+    //     .spawn()
+    //     .unwrap()
+}
+
 fn open(path: &std::path::Path) -> Child {
     Command::new("/usr/bin/open").args(&[path]).spawn().unwrap()
 }
@@ -206,6 +228,7 @@ struct App {
     ql: Child,
     paths: Vec<std::path::PathBuf>,
     cursor: usize,
+    important: std::collections::HashSet<std::path::PathBuf>,
     // signal: SigId
 }
 
@@ -218,7 +241,12 @@ impl App {
 
         let ql = quick_look(&paths[0]);
         // Self { signal, ql, paths, cursor: 0 }
-        Self { ql, paths, cursor: 0 }
+        Self {
+            ql,
+            paths,
+            cursor: 0,
+            important: <_>::default(),
+        }
     }
 
     fn current_path<'a>(&'a self) -> &std::path::Path {
@@ -248,6 +276,12 @@ impl App {
     // }
 
     fn exit(&mut self) {
+        if !self.important.is_empty() {
+            //
+            pb_copy(&self.important);
+            // println!("{:?}", &self.important);
+            // proc.wait();
+        }
         _ = self.ql.kill();
         std::process::exit(0)
     }
@@ -264,7 +298,7 @@ impl App {
             Action::Next => self.move_cursor_by(Dir::Next),
             Action::Prev => self.move_cursor_by(Dir::Prev),
             Action::Open => _ = open(&self.current_path()),
-            Action::Important => todo!(),
+            Action::Important => _ = self.important.insert(self.current_path().to_owned()),
             Action::Exit => self.exit(),
         }
         true
