@@ -19,6 +19,7 @@ use {
         CGEventType,
         EventField,
     },
+    // signal_hook_registry::SigId,
     std::process::{
         Child,
         Command,
@@ -91,7 +92,7 @@ fn is_process_trusted() -> bool {
         std::ffi::c_void,
     };
 
-    let mut dict: CFMutableDictionary<CFString, CFNumber> = <_>::default();
+    let mut dict = CFMutableDictionary::<CFString, CFNumber>::default();
 
     unsafe {
         dict.add(
@@ -205,13 +206,18 @@ struct App {
     ql: Child,
     paths: Vec<std::path::PathBuf>,
     cursor: usize,
+    // signal: SigId
 }
 
 impl App {
     pub fn new(paths: Vec<std::path::PathBuf>) -> Self {
         assert!(!paths.is_empty());
 
+        // there is a difference between a child exit due to us and a child exit  on it's own
+        // let signal = unsafe { signal_hook_registry::register(libc::SIGCHLD, || println!("child exited") ) }.unwrap();
+
         let ql = quick_look(&paths[0]);
+        // Self { signal, ql, paths, cursor: 0 }
         Self { ql, paths, cursor: 0 }
     }
 
@@ -241,6 +247,11 @@ impl App {
     // symlink("/origin_does_not_exist/", link_path).unwrap();
     // }
 
+    fn exit(&mut self) {
+        _ = self.ql.kill();
+        std::process::exit(0)
+    }
+
     pub fn handle(&mut self, e: &CGEvent) -> bool {
         if !is_preview_active() {
             return false;
@@ -254,10 +265,7 @@ impl App {
             Action::Prev => self.move_cursor_by(Dir::Prev),
             Action::Open => _ = open(&self.current_path()),
             Action::Important => todo!(),
-            Action::Exit => {
-                _ = self.ql.kill();
-                std::process::exit(0)
-            }
+            Action::Exit => self.exit(),
         }
         true
     }
