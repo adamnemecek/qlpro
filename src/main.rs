@@ -67,26 +67,16 @@ fn quick_look(path: &std::path::Path) -> Child {
         .unwrap()
 }
 
-fn pb_copy(paths: &std::collections::HashSet<std::path::PathBuf>)  {
-    use cli_clipboard::{ClipboardContext, ClipboardProvider};
+fn pb_copy(paths: &std::collections::HashSet<std::path::PathBuf>) {
+    use cli_clipboard::{
+        ClipboardContext,
+        ClipboardProvider,
+    };
 
     let s: Vec<_> = paths.iter().map(|x| x.to_str().unwrap()).collect();
     let joined = s.join("\n");
     let mut ctx = ClipboardContext::new().unwrap();
-    // let the_string = "Hello, world!";
     ctx.set_contents(joined).unwrap();
-    // assert_eq!(ctx.get_contents().unwrap(), the_string);
-    // ctx.clear().unwrap();
-
-    // let s: Vec<_> = paths.iter().map(|x| x.to_str().unwrap()).collect();
-    // let joined = s.join(" ");
-    // println!("{}", joined);
-    // Command::new("/usr/bin/pbcopy")
-    //     .arg(&joined)
-    //     // .stdout(std::process::Stdio::null())
-    //     // .stderr(std::process::Stdio::null())
-    //     .spawn()
-    //     .unwrap()
 }
 
 fn open(path: &std::path::Path) -> Child {
