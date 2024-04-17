@@ -88,24 +88,21 @@ extern "C" {
 }
 
 fn is_process_trusted() -> bool {
-    use {
-        core_foundation::{
-            base::{
-                FromVoid,
-                ToVoid,
-            },
-            dictionary::CFMutableDictionary,
-            number::CFNumber,
-            string::CFString,
+    use core_foundation::{
+        base::{
+            FromVoid,
+            ToVoid,
         },
-        std::ffi::c_void,
+        dictionary::CFMutableDictionary,
+        number::CFNumber,
+        string::CFString,
     };
 
     let mut dict = CFMutableDictionary::<CFString, CFNumber>::default();
 
     unsafe {
         dict.add(
-            &CFString::from_void(kAXTrustedCheckOptionPrompt as *const c_void).to_owned(),
+            &CFString::from_void(kAXTrustedCheckOptionPrompt as *const std::ffi::c_void).to_owned(),
             &1i64.into(),
         );
 
