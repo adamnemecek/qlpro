@@ -32,6 +32,7 @@ impl CGEventExt for &CGEvent {
         c.into()
     }
 }
+
 pub trait CFStringExt {
     fn as_str(&self) -> &'static str;
 }
@@ -45,9 +46,9 @@ impl CFStringExt for CFStringRef {
 
         // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
         unsafe {
-            let char_ptr = CFStringGetCStringPtr(*self, kCFStringEncodingUTF8);
-            assert!(!char_ptr.is_null());
-            let c_str = std::ffi::CStr::from_ptr(char_ptr);
+            let ptr = CFStringGetCStringPtr(*self, kCFStringEncodingUTF8);
+            assert!(!ptr.is_null());
+            let c_str = std::ffi::CStr::from_ptr(ptr);
             c_str.to_str().unwrap()
         }
     }
@@ -209,7 +210,7 @@ enum Dir {
     Next = 1,
 }
 
-fn is_preview_active() -> bool {
+fn is_preview_frontmost() -> bool {
     front_most_application() == "com.apple.quicklook.qlmanage"
 }
 
@@ -276,7 +277,7 @@ impl App {
     }
 
     pub fn handle(&mut self, e: &CGEvent) -> bool {
-        if !is_preview_active() {
+        if !is_preview_frontmost() {
             return false;
         }
 
