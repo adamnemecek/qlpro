@@ -4,19 +4,11 @@ extern crate objc;
 use {
     core_foundation::{
         runloop::CFRunLoop,
-        string::{
-            kCFStringEncodingUTF8,
-            CFStringGetCStringPtr,
-            CFStringRef,
-        },
+        string::CFStringRef,
     },
     core_graphics::event::{
         CGEvent,
         CGEventTap,
-        CGEventTapLocation,
-        CGEventTapOptions,
-        CGEventTapPlacement,
-        CGEventType,
         EventField,
     },
     // signal_hook_registry::SigId,
@@ -46,6 +38,11 @@ pub trait CFStringExt {
 
 impl CFStringExt for CFStringRef {
     fn as_str(&self) -> &'static str {
+        use core_foundation::string::{
+            kCFStringEncodingUTF8,
+            CFStringGetCStringPtr,
+        };
+
         // reference: https://github.com/servo/core-foundation-rs/blob/355740/core-foundation/src/string.rs#L49
         unsafe {
             let char_ptr = CFStringGetCStringPtr(*self, kCFStringEncodingUTF8);
@@ -117,6 +114,12 @@ fn is_process_trusted() -> bool {
 }
 
 fn listen(f: impl Fn(&CGEvent) -> bool + 'static) -> Result<CGEventTap<'static>, ()> {
+    use core_graphics::event::{
+        CGEventTapLocation,
+        CGEventTapOptions,
+        CGEventTapPlacement,
+        CGEventType,
+    };
     let tap = CGEventTap::new(
         CGEventTapLocation::Session,
         CGEventTapPlacement::HeadInsertEventTap,
