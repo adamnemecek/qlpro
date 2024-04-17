@@ -117,6 +117,7 @@ fn listen(f: impl Fn(&CGEvent) -> bool + 'static) -> Result<CGEventTap<'static>,
         CGEventTapPlacement,
         CGEventType,
     };
+
     let tap = CGEventTap::new(
         CGEventTapLocation::Session,
         CGEventTapPlacement::HeadInsertEventTap,
@@ -188,12 +189,10 @@ enum Action {
 
 impl Action {
     fn from(e: &CGEvent) -> Option<Self> {
-        // let flags = e.get_flags();
-        // let cmd = flags.contains(CGEventFlags::CGEventFlagCommand);
         let kc = e.key_code();
         match kc {
-            KeyCode::P => Self::Prev,
-            KeyCode::N => Self::Next,
+            KeyCode::P | KeyCode::UpArrow => Self::Prev,
+            KeyCode::N | KeyCode::DownArrow => Self::Next,
             KeyCode::O | KeyCode::Return => Self::Open,
             KeyCode::Q | KeyCode::W => Self::Exit,
             KeyCode::I => Self::Important,
