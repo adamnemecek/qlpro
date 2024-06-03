@@ -2,20 +2,17 @@
 extern crate objc;
 
 use {
-    core_foundation::{
+    accessibility::AXUIElementAttributes, core_foundation::{
         runloop::CFRunLoop,
         string::CFStringRef,
-    },
-    core_graphics::event::{
+    }, core_graphics::event::{
         CGEvent,
         CGEventTap,
         EventField,
-    },
-    // signal_hook_registry::SigId,
-    std::process::{
+    }, std::process::{
         Child,
         Command,
-    },
+    }
 };
 
 mod keycodes;
@@ -297,6 +294,11 @@ impl App {
 
 fn main() {
     let _ = is_process_trusted();
+
+
+    let acc = accessibility::AXUIElement::system_wide();
+    println!("{:?}", acc.focused());
+
     // println!("premissins {}", a);
 
     let Some(paths) = paths() else {
