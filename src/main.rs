@@ -2,7 +2,8 @@
 extern crate objc;
 
 use {
-    accessibility::AXUIElementAttributes, core_foundation::{
+    // accessibility::AXUIElementAttributes, 
+    core_foundation::{
         runloop::CFRunLoop,
         string::CFStringRef,
     }, core_graphics::event::{
@@ -53,7 +54,8 @@ impl CFStringExt for CFStringRef {
 
 fn quick_look(path: &std::path::Path) -> Child {
     // it makes sense to just like trim the last part since it can be passed in as both global and local
-    println!("{}", &path.components().last().unwrap().as_os_str().to_str().unwrap());
+    // println!("{}", &path.components().last().unwrap().as_os_str().to_str().unwrap());
+    println!("{}", &path.to_string_lossy());
     Command::new("/usr/bin/qlmanage")
         .args(&["-p", path.to_str().unwrap()])
         .stdout(std::process::Stdio::null())
@@ -149,7 +151,9 @@ fn front_most_application() -> &'static str {
 }
 
 fn paths() -> Option<Vec<std::path::PathBuf>> {
+
     let paths: Vec<_> = std::env::args().skip(1).collect();
+
     if paths.is_empty() {
         return None;
     }
@@ -296,11 +300,11 @@ fn main() {
     let _ = is_process_trusted();
 
 
-    let acc = accessibility::AXUIElement::system_wide();
-    println!("{:?}", acc.focused());
+    // let acc = accessibility::AXUIElement::system_wide();
+    // println!("focused {:?}", acc.focused());
 
     // println!("premissins {}", a);
-
+    
     let Some(paths) = paths() else {
         println!("Usage: Pass in the list of files");
         return;
