@@ -2,32 +2,36 @@
 extern crate objc;
 
 use {
-    // accessibility::AXUIElementAttributes, 
+    // accessibility::AXUIElementAttributes,
     core_foundation::{
         runloop::CFRunLoop,
         string::CFStringRef,
-    }, core_graphics::event::{
+    },
+    core_graphics::event::{
         CGEvent,
         CGEventTap,
         EventField,
-    }, std::process::{
+    },
+    std::process::{
         Child,
         Command,
-    }
+    },
 };
 
 mod keycodes;
 pub use keycodes::*;
 
 pub trait CGEventExt {
-    fn key_code(&self) -> KeyCode;
+    type Error;
+    fn key_code(&self) -> Result<KeyCode, ()>;
 }
 
 impl CGEventExt for &CGEvent {
+    type Error = ();
     #[inline]
-    fn key_code(&self) -> KeyCode {
+    fn key_code(&self) -> Result<KeyCode, ()> {
         let c: u16 = self.get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE) as _;
-        c.into()
+        c.try_into()
     }
 }
 
@@ -151,7 +155,6 @@ fn front_most_application() -> &'static str {
 }
 
 fn paths() -> Option<Vec<std::path::PathBuf>> {
-
     let paths: Vec<_> = std::env::args().skip(1).collect();
 
     if paths.is_empty() {
@@ -191,7 +194,8 @@ enum Action {
 
 impl Action {
     fn from(e: &CGEvent) -> Option<Self> {
-        let kc = e.key_code();
+        let Ok(kc) = e.key_code() else { return None };
+
         match kc {
             KeyCode::P | KeyCode::UpArrow => Self::Prev,
             KeyCode::N | KeyCode::DownArrow => Self::Next,
@@ -299,12 +303,11 @@ impl App {
 fn main() {
     let _ = is_process_trusted();
 
-
     // let acc = accessibility::AXUIElement::system_wide();
     // println!("focused {:?}", acc.focused());
 
     // println!("premissins {}", a);
-    
+
     let Some(paths) = paths() else {
         println!("Usage: Pass in the list of files");
         return;

@@ -6,11 +6,12 @@ macro_rules! gen_keycode {
             $($constant),*
         }
 
-        impl From<u16> for $name {
-            fn from(value: u16) -> Self {
+        impl TryFrom<u16> for $name {
+            type Error = ();
+            fn try_from(value: u16) -> Result<Self, ()> {
                 match value {
-                    $($value => Self::$constant,)*
-                    _=> todo!()
+                    $($value => Ok(Self::$constant),)*
+                    _=> Err(())
                 }
             }
         }
